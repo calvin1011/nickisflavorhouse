@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { CheckoutForm } from '@/components/checkout/CheckoutForm'
 
 export function Checkout() {
   return (
@@ -9,7 +10,9 @@ export function Checkout() {
         <h1 className="font-display text-3xl font-bold text-brand-foreground">
           Checkout
         </h1>
-        <p className="mt-4 text-brand-foreground/80">Checkout placeholder.</p>
+        <div className="mt-6">
+          <CheckoutForm />
+        </div>
       </main>
       <Footer />
     </div>

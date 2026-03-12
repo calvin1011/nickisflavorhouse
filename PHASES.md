@@ -53,12 +53,12 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 3: Checkout flow (no payment yet)
 
-- [ ] `src/utils/validators.js` — Zod schemas: `checkoutSchema`, `cateringSchema`
-- [ ] `src/lib/sanitize.js` — DOMPurify: `sanitizeString`, `sanitizeOrder`
-- [ ] `src/components/checkout/CheckoutForm.jsx` — steps: Cart review → Customer info (name, email, phone, order type, pickup date/time, notes)
-- [ ] `src/components/checkout/CateringForm.jsx` — event date/time/location, guest count, catering notes; show only if cart has catering or type is catering
-- [ ] `src/components/checkout/DepositSummary.jsx` — subtotal, deposit, balance due
-- [ ] Checkout page: multi-step form with validation; on submit for now just log payload (no API call)
+- [x] `src/utils/validators.js` — Zod schemas: `checkoutSchema`, `cateringSchema`
+- [x] `src/lib/sanitize.js` — DOMPurify: `sanitizeString`, `sanitizeOrder`
+- [x] `src/components/checkout/CheckoutForm.jsx` — steps: Cart review → Customer info (name, email, phone, order type, pickup date/time, notes)
+- [x] `src/components/checkout/CateringForm.jsx` — event date/time/location, guest count, catering notes; show only if cart has catering or type is catering
+- [x] `src/components/checkout/DepositSummary.jsx` — subtotal, deposit, balance due
+- [x] Checkout page: multi-step form with validation; on submit for now just log payload (no API call)
 
 **Deliverable:** Full checkout form with validation and sanitization; deposit summary correct; no Stripe yet.
 
