@@ -1,0 +1,21 @@
+---
+description: Stage new files to git and keep .gitignore updated for paths that must not be tracked
+alwaysApply: true
+---
+
+# Git and .gitignore
+
+## New files
+
+- When you create or add new files that belong in the repo, stage them: `git add <path>` (or `git add .` for the changed area). Do not leave new project files untracked.
+
+## Paths to ignore
+
+- Any path that must not be committed (secrets, build output, dependencies, IDE, OS) must be listed in `.gitignore`. Add entries as needed; do not commit:
+  - `.env`, `.env.local`, `.env.*.local` (and any file containing secrets)
+  - `node_modules/`
+  - `dist/`, `build/`, Vite/build output
+  - IDE/editor: `.idea/`, `.vscode/` (unless only shared config), `*.swp`
+  - OS: `.DS_Store`, `Thumbs.db`
+  - Logs and caches: `*.log`, `.cache/`, `.turbo/`
+- If you introduce a new tool or output directory that should not be tracked, add it to `.gitignore` in the same change.

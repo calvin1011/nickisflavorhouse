@@ -1,0 +1,21 @@
+---
+description: Commit message format and conventions
+alwaysApply: true
+---
+
+# Commit Messages
+
+- Use the imperative mood: "Add checkout form" not "Added checkout form".
+- First line: short summary (about 50 characters). No period at the end.
+- Optionally add a blank line and a body for context, breaking changes, or ticket refs.
+- Scope when helpful: "fix(api): validate deposit server-side", "feat(menu): category filter".
+
+Good:
+- `Add Stripe webhook handler for checkout.session.completed`
+- `fix(cart): correct deposit for subtotals under 20`
+- `feat(admin): order status dropdown with realtime update`
+
+Bad:
+- `fixed stuff`
+- `WIP`
+- `Updates`

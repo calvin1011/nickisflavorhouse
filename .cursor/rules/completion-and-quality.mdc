@@ -1,0 +1,20 @@
+---
+description: Completion criteria and code quality — tests pass, no fluff, critical code tested
+alwaysApply: true
+---
+
+# Completion and Quality
+
+## Marking work completed
+
+- Do not mark a task or phase completed until the test suite passes. Run tests (e.g. `npm test` or `pnpm test`) and fix any failures before updating todos or calling the work done.
+- If the project has no tests yet for the changed area, add or extend tests for critical behavior, then run the suite before marking complete.
+
+## Code style
+
+- Do not add emojis in code, commit messages, or docs unless the user explicitly asks for them.
+- Avoid unnecessary comments. Prefer clear names and small functions. Comment only when explaining non-obvious business logic or constraints.
+
+## Critical features
+
+- Payment, checkout, order creation, and auth flows must have tests (unit and/or integration) where feasible. Sanitization, validation, and deposit calculation must be covered by tests.
