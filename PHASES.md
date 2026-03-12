@@ -36,16 +36,16 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 2: Menu (read-only) + cart state
 
-- [ ] `src/hooks/useMenu.js` — fetch categories + available menu items from Supabase
-- [ ] `src/store/cartStore.js` — Zustand store (items, add, remove, update qty, clear)
-- [ ] `src/components/menu/CategoryFilter.jsx` — category tabs (sticky on mobile)
-- [ ] `src/components/menu/MenuGrid.jsx` + `MenuCard.jsx` — photo, name, price, Add to Cart; catering badge when `is_catering`
-- [ ] `src/components/menu/MenuItemModal.jsx` — optional detail modal
-- [ ] `src/components/cart/CartDrawer.jsx` — slide from right; full-screen on mobile, 400px on desktop
-- [ ] `src/components/cart/CartItem.jsx` + `CartSummary.jsx` — line items, subtotal, deposit preview, “Proceed to Checkout”
-- [ ] `src/utils/depositCalc.js` — `calculateDeposit`, `calculateBalanceDue`
-- [ ] `src/utils/formatCurrency.js`
-- [ ] Wire Menu page: category filter → grid → cart drawer; sticky “View Cart” bar on mobile
+- [x] `src/hooks/useMenu.js` — fetch categories + available menu items from Supabase
+- [x] `src/store/cartStore.js` — Zustand store (items, add, remove, update qty, clear)
+- [x] `src/components/menu/CategoryFilter.jsx` — category tabs (sticky on mobile)
+- [x] `src/components/menu/MenuGrid.jsx` + `MenuCard.jsx` — photo, name, price, Add to Cart; catering badge when `is_catering`
+- [x] `src/components/menu/MenuItemModal.jsx` — optional detail modal
+- [x] `src/components/cart/CartDrawer.jsx` — slide from right; full-screen on mobile, 400px on desktop
+- [x] `src/components/cart/CartItem.jsx` + `CartSummary.jsx` — line items, subtotal, deposit preview, “Proceed to Checkout”
+- [x] `src/utils/depositCalc.js` — `calculateDeposit`, `calculateBalanceDue`
+- [x] `src/utils/formatCurrency.js`
+- [x] Wire Menu page: category filter → grid → cart drawer; sticky “View Cart” bar on mobile
 
 **Deliverable:** Menu loads from Supabase; users can add/remove items and see cart + deposit preview.
 

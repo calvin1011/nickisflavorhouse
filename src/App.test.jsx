@@ -13,12 +13,12 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: /Nicki's Flavor House/i })).toBeInTheDocument()
   })
 
-  it('renders menu placeholder at /menu', () => {
+  it('renders menu page at /menu', () => {
     render(
       <MemoryRouter initialEntries={['/menu']}>
         <App />
       </MemoryRouter>
     )
-    expect(screen.getByText(/Menu coming soon/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Menu/i })).toBeInTheDocument()
   })
 })

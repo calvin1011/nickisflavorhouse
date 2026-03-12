@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useCartStore } from '@/store/cartStore'
 
 const navLinks = [
   { to: '/menu', label: 'Order Now' },
@@ -10,6 +11,8 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const openDrawer = useCartStore((s) => s.openDrawer)
+  const itemCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0))
 
   return (
     <header className="sticky top-0 z-50 border-b border-brand-muted/30 bg-brand-background/95 backdrop-blur">
@@ -21,18 +24,34 @@ export function Navbar() {
           Nicki's Flavor House
         </Link>
 
-        <ul className="hidden items-center gap-8 sm:flex">
-          {navLinks.map(({ to, label }) => (
-            <li key={to}>
-              <Link
-                to={to}
-                className="text-brand-foreground/90 hover:text-brand-primary transition-colors"
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="flex items-center gap-4">
+          <ul className="hidden items-center gap-8 sm:flex">
+            {navLinks.map(({ to, label }) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  className="text-brand-foreground/90 hover:text-brand-primary transition-colors"
+                >
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            type="button"
+            onClick={openDrawer}
+            className="relative rounded p-2 text-brand-foreground hover:bg-brand-muted/20 transition-colors"
+            aria-label={`Open cart${itemCount > 0 ? ` (${itemCount} items)` : ''}`}
+          >
+            <ShoppingBag size={24} />
+            {itemCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-primary px-1.5 text-xs font-medium text-white">
+                {itemCount > 99 ? '99+' : itemCount}
+              </span>
+            )}
+          </button>
+        </div>
 
         <button
           type="button"

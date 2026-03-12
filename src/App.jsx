@@ -6,10 +6,16 @@ import { Checkout } from '@/pages/Checkout'
 import { OrderConfirmation } from '@/pages/OrderConfirmation'
 import { AdminLayout } from '@/pages/admin/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
+import { CartDrawer } from '@/components/cart/CartDrawer'
+import { useCartStore } from '@/store/cartStore'
 
 function App() {
+  const drawerOpen = useCartStore((s) => s.drawerOpen)
+  const closeDrawer = useCartStore((s) => s.closeDrawer)
+
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/menu" element={<Menu />} />
       <Route path="/checkout" element={<Checkout />} />
@@ -20,6 +26,8 @@ function App() {
         <Route path="*" element={<AdminDashboard />} />
       </Route>
     </Routes>
+      <CartDrawer open={drawerOpen} onClose={closeDrawer} />
+    </>
   )
 }
 
