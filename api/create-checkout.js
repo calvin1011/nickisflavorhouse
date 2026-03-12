@@ -1,7 +1,7 @@
 /**
  * Create Checkout: validate payload, create pending order + order_items in Supabase,
  * create Stripe Checkout Session, return session URL.
- * Expects orders (order_number, customer_*, order_type, pickup_*, notes, catering, subtotal_cents, deposit_cents, balance_due_cents, status) and order_items (order_id, menu_item_id, name, price_cents, quantity, is_catering).
+ * Matches schema: orders (subtotal, deposit_amount, balance_due in dollars; flattened catering fields); order_items (no is_catering).
  */
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
@@ -132,20 +132,27 @@ export default async function handler(req, res) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const orderNumber = generateOrderNumber()
 
+  const catering = data.catering || {}
   const orderRecord = {
     order_number: orderNumber,
     customer_name: data.name,
     customer_email: data.email,
     customer_phone: data.phone,
     order_type: data.order_type,
+    status: 'pending',
+    payment_status: 'pending',
+    subtotal: subtotalCents / 100,
+    deposit_amount: depositCents / 100,
+    balance_due: balanceDueCents / 100,
+    notes: data.notes || null,
     pickup_date: data.pickup_date || null,
     pickup_time: data.pickup_time || null,
-    notes: data.notes || null,
-    catering: data.catering || null,
-    subtotal_cents: subtotalCents,
-    deposit_cents: depositCents,
-    balance_due_cents: balanceDueCents,
-    status: 'pending_payment',
+    is_catering: data.order_type === 'catering' || !!data.catering,
+    event_date: catering.event_date || null,
+    event_time: catering.event_time || null,
+    event_location: catering.event_location || null,
+    guest_count: catering.guest_count ?? null,
+    catering_notes: catering.catering_notes || null,
   }
 
   const { data: order, error: orderError } = await supabase
@@ -164,9 +171,8 @@ export default async function handler(req, res) {
     order_id: order.id,
     menu_item_id: item.id,
     name: item.name,
-    price_cents: item.price,
+    price: item.price,
     quantity: item.quantity,
-    is_catering: !!item.is_catering,
   }))
 
   const { error: itemsError } = await supabase.from('order_items').insert(orderItems)

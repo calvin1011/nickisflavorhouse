@@ -80,11 +80,13 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 5: Notifications
 
-- [ ] `api/notify.js` — `sendEmailNotification(order)` (Resend), `sendPushNotification(order)` (ntfy.sh), `dispatchNotification(order)` (Promise.allSettled)
-- [ ] Call `dispatchNotification(order)` from Stripe webhook after order insert
-- [ ] Add Resend, NTFY_TOPIC, NICKI_EMAIL to `.env.example` (already there) and document in README or PHASES
+- [x] `api/notify.js` — `sendEmailNotification(order)` (Resend), `sendPushNotification(order)` (ntfy.sh), `dispatchNotification(order)` (Promise.allSettled)
+- [x] Call `dispatchNotification(order)` from Stripe webhook after order update
+- [x] Add Resend, NTFY_TOPIC, NICKI_EMAIL, RESEND_FROM to `.env.example` and document below
 
 **Deliverable:** Each new order triggers email to Nicki + push via ntfy.
+
+**Notification env vars:** `RESEND_API_KEY` (Resend), `RESEND_FROM` (sender address, e.g. `onboarding@resend.dev` or your verified domain), `NTFY_TOPIC` (ntfy.sh topic name), `NICKI_EMAIL` (recipient for order emails).
 
 ---
 

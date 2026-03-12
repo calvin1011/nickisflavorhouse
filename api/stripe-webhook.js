@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { dispatchNotification } from './notify.js'
 
 function bufferFromReq(req) {
   return new Promise((resolve, reject) => {
@@ -63,8 +64,8 @@ export default async function handler(req, res) {
     .from('orders')
     .update({
       stripe_session_id: session.id,
-      deposit_paid_at: new Date().toISOString(),
-      status: 'pending',
+      payment_status: 'deposit_paid',
+      updated_at: new Date().toISOString(),
     })
     .eq('id', orderId)
 
@@ -72,6 +73,22 @@ export default async function handler(req, res) {
     console.error('Webhook: order update failed', error)
     res.status(500).json({ error: 'Order update failed' })
     return
+  }
+
+  const { data: orderRow } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', orderId)
+    .single()
+
+  const { data: orderItems } = await supabase
+    .from('order_items')
+    .select('name, quantity, price')
+    .eq('order_id', orderId)
+
+  if (orderRow) {
+    const orderForNotify = { ...orderRow, items: orderItems || [] }
+    await dispatchNotification(orderForNotify)
   }
 
   res.status(200).json({ received: true })
