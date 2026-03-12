@@ -8,6 +8,7 @@ import { sanitizeOrder } from '@/lib/sanitize'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { DepositSummary } from './DepositSummary'
 import { CateringForm } from './CateringForm'
+import { PaymentButton } from './PaymentButton'
 import { CartItem } from '@/components/cart/CartItem'
 
 const inputClass =
@@ -48,20 +49,9 @@ export function CheckoutForm() {
   const orderType = methods.watch('order_type')
   const showCatering = orderType === 'catering' || hasCatering
 
-  const onSubmit = (data) => {
-    const sanitized = sanitizeOrder(data)
-    const payload = {
-      ...sanitized,
-      items: items.map(({ id, name, price, quantity, is_catering }) => ({
-        id,
-        name,
-        price,
-        quantity,
-        is_catering: !!is_catering,
-      })),
-      subtotal_cents: subtotalCents,
-    }
-    console.log('Checkout payload (no payment yet):', payload)
+  const onSubmit = () => {
+    // Payment is handled by PaymentButton via handleSubmit(PaymentButton.onSubmit)
+    // This is only called if form is invalid and submit is triggered elsewhere
   }
 
   if (items.length === 0) {
@@ -261,13 +251,11 @@ export function CheckoutForm() {
 
             <div className="border-t border-brand-muted/30 pt-4">
               <DepositSummary subtotalCents={subtotalCents} />
-              <button
-                type="submit"
+              <PaymentButton
                 className="mt-4 w-full rounded-md bg-brand-primary px-4 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
-                disabled={methods.formState.isSubmitting}
               >
-                {methods.formState.isSubmitting ? 'Submitting…' : 'Submit order'}
-              </button>
+                Pay Deposit
+              </PaymentButton>
             </div>
           </>
         )}

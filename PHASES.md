@@ -66,14 +66,13 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 4: Stripe Checkout + order creation
 
-- [ ] `src/lib/stripe.js` — Stripe client (publishable key) for redirect
-- [ ] `api/create-checkout.js` (Vercel serverless): validate + sanitize order, compute deposit server-side, create Stripe Checkout Session, return session URL
+- [x] `src/lib/stripe.js` — Stripe client (publishable key) for redirect
+- [x] `api/create-checkout.js` (Vercel serverless): validate + sanitize order, compute deposit server-side, create Stripe Checkout Session, return session URL
   - Use `VITE_APP_URL` or equivalent for success/cancel URLs (set in Vercel env as needed)
-- [ ] `src/components/checkout/PaymentButton.jsx` — POST to `/api/create-checkout` with order payload, redirect to Stripe
-- [ ] Wire Checkout page: on “Pay Deposit” → call API → redirect to Stripe
-- [ ] **Webhook:** `api/stripe-webhook.js` — verify signature, on `checkout.session.completed` insert into `orders` (generate `order_number`), insert `order_items` from metadata or from a separate “pending order” flow if you store it server-side
-  - **Note:** Checkout Session metadata has limited size; if cart is large, consider creating a “pending order” in Supabase before redirect and passing `order_id` in metadata, then webhook fills payment info and order_items from DB. Otherwise encode minimal order summary in metadata and keep items in metadata or a single JSON field.
-- [ ] After payment: redirect to `/order-confirmation?session_id=...`; confirmation page can show “Thank you” + order number (from URL or by fetching session)
+- [x] `src/components/checkout/PaymentButton.jsx` — POST to `/api/create-checkout` with order payload, redirect to Stripe
+- [x] Wire Checkout page: on “Pay Deposit” → call API → redirect to Stripe
+- [x] **Webhook:** `api/stripe-webhook.js` — verify signature, on `checkout.session.completed` update order (stripe_session_id, deposit_paid_at, status); pending order + order_items created in create-checkout, order_id in metadata
+- [x] After payment: redirect to `/order-confirmation?session_id=...`; confirmation page shows “Thank you” and clears cart
 
 **Deliverable:** Customer can pay deposit via Stripe; webhook creates order in Supabase; confirmation page shows success.
 
