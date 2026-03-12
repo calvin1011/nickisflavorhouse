@@ -6,14 +6,14 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 0: Project bootstrap (if not done)
 
-- [ ] React 18 + Vite project init
-- [ ] Tailwind CSS + shadcn/ui setup
-- [ ] React Router v6, Zustand, React Hook Form, Zod
-- [ ] Brand CSS variables in `index.css` (Section 3 of design doc)
-- [ ] Google Fonts: Playfair Display + Inter via `index.html` `<link>`
-- [ ] Copy `.env.example` → `.env.local`, fill Supabase vars only for now
-- [ ] `src/lib/supabase.js` client
-- [ ] `vercel.json` (rewrites + API headers)
+- [x] React 18 + Vite project init
+- [x] Tailwind CSS + shadcn/ui setup
+- [x] React Router v6, Zustand, React Hook Form, Zod
+- [x] Brand CSS variables in `index.css` (Section 3 of design doc)
+- [x] Google Fonts: Playfair Display + Inter via `index.html` `<link>`
+- [x] Copy `.env.example` → `.env.local`, fill Supabase vars only for now
+- [x] `src/lib/supabase.js` client
+- [x] `vercel.json` (rewrites + API headers)
 
 **Deliverable:** App runs locally, Supabase client connects, base layout/styles ready.
 
@@ -21,14 +21,14 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 1: Layout + static shell
 
-- [ ] `src/components/layout/Navbar.jsx` — logo, Order Now, Contact, mobile menu
-- [ ] `src/components/layout/Footer.jsx` — Cash App/Zelle, Instagram, contact
-- [ ] `src/App.jsx` — routes: `/`, `/menu`, `/checkout`, `/order-confirmation`, `/contact`, `/admin/*`
-- [ ] `src/pages/Home.jsx` — hero (logo, tagline, Order Now CTA), placeholder for announcements + featured + Instagram
-- [ ] `src/pages/Contact.jsx` — static content + placeholder form
-- [ ] `src/pages/Menu.jsx` — placeholder “Menu coming soon”
-- [ ] `src/pages/Checkout.jsx` — placeholder
-- [ ] `src/pages/OrderConfirmation.jsx` — placeholder
+- [x] `src/components/layout/Navbar.jsx` — logo, Order Now, Contact, mobile menu
+- [x] `src/components/layout/Footer.jsx` — Cash App/Zelle, Instagram, contact
+- [x] `src/App.jsx` — routes: `/`, `/menu`, `/checkout`, `/order-confirmation`, `/contact`, `/admin/*`
+- [x] `src/pages/Home.jsx` — hero (logo, tagline, Order Now CTA), placeholder for announcements + featured + Instagram
+- [x] `src/pages/Contact.jsx` — static content + placeholder form
+- [x] `src/pages/Menu.jsx` — placeholder “Menu coming soon”
+- [x] `src/pages/Checkout.jsx` — placeholder
+- [x] `src/pages/OrderConfirmation.jsx` — placeholder
 
 **Deliverable:** All customer routes render; navigation and footer work; no data yet.
 

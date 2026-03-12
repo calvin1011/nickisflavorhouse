@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-primary: #8b4513;
+    --brand-primary-dark: #6d3410;
+    --brand-accent: #c4a35a;
+    --brand-muted: #a08060;
+    --brand-background: #fdfbf7;
+    --brand-foreground: #2c1810;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-brand-foreground antialiased;
+    background-color: var(--brand-background);
+  }
+
+  h1, h2, h3 {
+    @apply font-display font-semibold;
+  }
+}
