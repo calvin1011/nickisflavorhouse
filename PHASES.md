@@ -157,9 +157,9 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 12: Home page polish + Instagram
 
-- [ ] Featured menu items: admin-curated (e.g. flag on `menu_items` or a “featured” table); show top 6 on home
-- [ ] `src/components/instagram/InstagramFeed.jsx` — fetch from Instagram Basic Display API (token from env or `admin_profile`); show latest 6; link to profile
-- [ ] Finalize hero, footer copy, and Cash App/Zelle in one place (e.g. config or env)
+- [x] Featured menu items: admin-curated (e.g. flag on `menu_items` or a “featured” table); show top 6 on home
+- [x] `src/components/instagram/InstagramFeed.jsx` — fetch from Instagram Basic Display API (token from env or `admin_profile`); show latest 6; link to profile
+- [x] Finalize hero, footer copy, and Cash App/Zelle in one place (e.g. config or env)
 
 **Deliverable:** Home has hero, announcements, featured menu, Instagram feed, and footer.
 

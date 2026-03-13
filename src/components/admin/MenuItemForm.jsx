@@ -17,6 +17,7 @@ const menuItemFormSchema = z.object({
   category_id: z.string().uuid('Select a category'),
   price: z.coerce.number().min(0, 'Price must be 0 or more'),
   is_catering: z.boolean().optional().default(false),
+  featured: z.boolean().optional().default(false),
   sort_order: z.coerce.number().int().min(0).optional().default(0),
   min_price: z.coerce.number().min(0).optional().nullable(),
   max_price: z.coerce.number().min(0).optional().nullable(),
@@ -75,6 +76,7 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
       category_id: '',
       price: 0,
       is_catering: false,
+      featured: false,
       sort_order: 0,
       min_price: null,
       max_price: null,
@@ -93,6 +95,7 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
         category_id: item.category_id ?? '',
         price: item.price ?? 0,
         is_catering: item.is_catering ?? false,
+        featured: item.featured ?? false,
         sort_order: item.sort_order ?? 0,
         min_price: item.catering_min_price ?? null,
         max_price: item.catering_max_price ?? null,
@@ -104,6 +107,7 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
         category_id: categories[0]?.id ?? '',
         price: 0,
         is_catering: false,
+        featured: false,
         sort_order: 0,
         min_price: null,
         max_price: null,
@@ -150,6 +154,7 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
       price: priceDollars,
       image_url: imageUrl,
       is_catering: !!data.is_catering,
+      featured: !!data.featured,
       sort_order: Number(data.sort_order) || 0,
       catering_min_price: minPriceDollars,
       catering_max_price: maxPriceDollars,
@@ -281,6 +286,18 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
             />
             <label htmlFor="is_catering" className="text-sm font-medium text-brand-foreground">
               Catering item
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="featured"
+              type="checkbox"
+              className="h-4 w-4 rounded border-brand-muted/40 text-brand-primary focus:ring-brand-primary"
+              {...register('featured')}
+            />
+            <label htmlFor="featured" className="text-sm font-medium text-brand-foreground">
+              Show on home (featured)
             </label>
           </div>
 

@@ -23,7 +23,7 @@ export function useAdminMenu() {
           .order('sort_order', { ascending: true, nullsFirst: false }),
         supabase
           .from('menu_items')
-          .select('id, name, description, category_id, price, image_url, is_catering, sort_order, available, catering_min_price, catering_max_price')
+          .select('id, name, description, category_id, price, image_url, is_catering, sort_order, available, featured, catering_min_price, catering_max_price')
           .order('sort_order', { ascending: true, nullsFirst: false }),
       ])
       if (categoriesRes.error) throw categoriesRes.error
@@ -58,6 +58,21 @@ export function useAdminMenu() {
     []
   )
 
+  const updateFeatured = useCallback(
+    async (id, featured) => {
+      if (!supabase) return
+      const { error: updateError } = await supabase
+        .from('menu_items')
+        .update({ featured })
+        .eq('id', id)
+      if (updateError) throw updateError
+      setItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, featured } : item))
+      )
+    },
+    []
+  )
+
   const deleteItem = useCallback(async (id) => {
     if (!supabase) return
     const { error: deleteError } = await supabase.from('menu_items').delete().eq('id', id)
@@ -77,6 +92,7 @@ export function useAdminMenu() {
     error,
     refetch: fetch,
     updateAvailable,
+    updateFeatured,
     deleteItem,
     getCategoryName,
   }

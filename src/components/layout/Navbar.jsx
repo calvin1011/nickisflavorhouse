@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Menu, X, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCartStore } from '@/store/cartStore'
+import { siteConfig } from '@/lib/siteConfig'
 
 const navLinks = [
   { to: '/menu', label: 'Order Now' },
@@ -21,7 +22,7 @@ export function Navbar() {
           to="/"
           className="font-display text-xl font-bold text-brand-primary sm:text-2xl"
         >
-          Nicki's Flavor House
+          {siteConfig.brandName}
         </Link>
 
         <div className="flex items-center gap-4">

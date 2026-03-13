@@ -11,6 +11,7 @@ export function AdminMenu() {
     loading,
     error,
     updateAvailable,
+    updateFeatured,
     deleteItem,
     getCategoryName,
     refetch,
@@ -18,6 +19,7 @@ export function AdminMenu() {
   const [editingItem, setEditingItem] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [togglingId, setTogglingId] = useState(null)
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
 
   const handleToggleAvailable = async (id, current) => {
@@ -28,6 +30,17 @@ export function AdminMenu() {
       console.error(err)
     } finally {
       setTogglingId(null)
+    }
+  }
+
+  const handleToggleFeatured = async (id, current) => {
+    setTogglingFeaturedId(id)
+    try {
+      await updateFeatured(id, !current)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setTogglingFeaturedId(null)
     }
   }
 
@@ -109,6 +122,7 @@ export function AdminMenu() {
                 <th className="px-4 py-3 font-medium text-brand-foreground">Name</th>
                 <th className="px-4 py-3 font-medium text-brand-foreground">Price</th>
                 <th className="px-4 py-3 font-medium text-brand-foreground">Available</th>
+                <th className="px-4 py-3 font-medium text-brand-foreground">Featured</th>
                 <th className="px-4 py-3 font-medium text-brand-foreground text-right">
                   Actions
                 </th>
@@ -146,6 +160,20 @@ export function AdminMenu() {
                       }`}
                     >
                       {togglingId === item.id ? '…' : item.available !== false ? 'Yes' : 'No'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeatured(item.id, item.featured === true)}
+                      disabled={togglingFeaturedId === item.id}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        item.featured === true
+                          ? 'bg-brand-primary/20 text-brand-primary'
+                          : 'bg-brand-muted/30 text-brand-foreground/70'
+                      }`}
+                    >
+                      {togglingFeaturedId === item.id ? '…' : item.featured === true ? 'Yes' : 'No'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-right">
