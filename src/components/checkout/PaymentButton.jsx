@@ -16,15 +16,30 @@ export function PaymentButton({ children = 'Pay Deposit', disabled, className })
   const subtotalCents = useCartStore(getCartSubtotal)
   const buttonRef = useRef(null)
 
-  const onValidationFailed = () => {
-    setValidationMessage('Please fix the errors above and try again.')
-    setError(null)
-    const firstError = document.querySelector('[role="alert"]')
-    if (firstError) {
-      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    } else {
-      buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  function getFirstErrorMessage(errors) {
+    if (!errors || typeof errors !== 'object') return null
+    for (const value of Object.values(errors)) {
+      if (value?.message && typeof value.message === 'string') return value.message
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const nested = getFirstErrorMessage(value)
+        if (nested) return nested
+      }
     }
+    return null
+  }
+
+  const onValidationFailed = (errors) => {
+    const message = getFirstErrorMessage(errors) || 'Please fix the errors above and try again.'
+    setValidationMessage(message)
+    setError(null)
+    requestAnimationFrame(() => {
+      const fieldError = document.querySelector('[data-field-error]')
+      if (fieldError && typeof fieldError.scrollIntoView === 'function') {
+        fieldError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else if (buttonRef.current && typeof buttonRef.current.scrollIntoView === 'function') {
+        buttonRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    })
   }
 
   const onSubmit = async (data) => {

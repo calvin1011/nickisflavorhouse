@@ -16,6 +16,11 @@ export function CateringForm() {
       <h3 className="font-display text-lg font-semibold text-brand-foreground">
         Catering details
       </h3>
+      {errors.catering?.message && (
+        <p className="text-sm text-red-600" role="alert" data-field-error>
+          {errors.catering.message}
+        </p>
+      )}
       <div>
         <label htmlFor="catering.event_date" className={labelClass}>
           Event date
@@ -27,7 +32,7 @@ export function CateringForm() {
           {...register('catering.event_date')}
         />
         {errors.catering?.event_date && (
-          <p className="mt-1 text-sm text-red-600" role="alert">
+          <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
             {errors.catering.event_date.message}
           </p>
         )}
@@ -43,7 +48,7 @@ export function CateringForm() {
           {...register('catering.event_time')}
         />
         {errors.catering?.event_time && (
-          <p className="mt-1 text-sm text-red-600" role="alert">
+          <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
             {errors.catering.event_time.message}
           </p>
         )}
@@ -60,7 +65,7 @@ export function CateringForm() {
           {...register('catering.event_location')}
         />
         {errors.catering?.event_location && (
-          <p className="mt-1 text-sm text-red-600" role="alert">
+          <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
             {errors.catering.event_location.message}
           </p>
         )}
@@ -78,7 +83,7 @@ export function CateringForm() {
           {...register('catering.guest_count', { valueAsNumber: true })}
         />
         {errors.catering?.guest_count && (
-          <p className="mt-1 text-sm text-red-600" role="alert">
+          <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
             {errors.catering.guest_count.message}
           </p>
         )}
@@ -95,7 +100,7 @@ export function CateringForm() {
           {...register('catering.catering_notes')}
         />
         {errors.catering?.catering_notes && (
-          <p className="mt-1 text-sm text-red-600" role="alert">
+          <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
             {errors.catering.catering_notes.message}
           </p>
         )}

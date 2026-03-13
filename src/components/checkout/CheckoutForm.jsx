@@ -123,7 +123,7 @@ export function CheckoutForm() {
                     {...methods.register('name')}
                   />
                   {methods.formState.errors.name && (
-                    <p className="mt-1 text-sm text-red-600" role="alert">
+                    <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                       {methods.formState.errors.name.message}
                     </p>
                   )}
@@ -139,7 +139,7 @@ export function CheckoutForm() {
                     {...methods.register('email')}
                   />
                   {methods.formState.errors.email && (
-                    <p className="mt-1 text-sm text-red-600" role="alert">
+                    <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                       {methods.formState.errors.email.message}
                     </p>
                   )}
@@ -155,7 +155,7 @@ export function CheckoutForm() {
                     {...methods.register('phone')}
                   />
                   {methods.formState.errors.phone && (
-                    <p className="mt-1 text-sm text-red-600" role="alert">
+                    <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                       {methods.formState.errors.phone.message}
                     </p>
                   )}
@@ -185,7 +185,7 @@ export function CheckoutForm() {
                   </label>
                 </div>
                 {methods.formState.errors.order_type && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
+                  <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                     {methods.formState.errors.order_type.message}
                   </p>
                 )}
@@ -204,7 +204,7 @@ export function CheckoutForm() {
                       {...methods.register('pickup_date')}
                     />
                     {methods.formState.errors.pickup_date && (
-                      <p className="mt-1 text-sm text-red-600" role="alert">
+                      <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                         {methods.formState.errors.pickup_date.message}
                       </p>
                     )}
@@ -220,7 +220,7 @@ export function CheckoutForm() {
                       {...methods.register('pickup_time')}
                     />
                     {methods.formState.errors.pickup_time && (
-                      <p className="mt-1 text-sm text-red-600" role="alert">
+                      <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                         {methods.formState.errors.pickup_time.message}
                       </p>
                     )}
@@ -241,11 +241,11 @@ export function CheckoutForm() {
                   placeholder="Allergies, special requests..."
                   {...methods.register('notes')}
                 />
-                {methods.formState.errors.notes && (
-                  <p className="mt-1 text-sm text-red-600" role="alert">
-                    {methods.formState.errors.notes.message}
-                  </p>
-                )}
+{methods.formState.errors.notes && (
+                <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
+                  {methods.formState.errors.notes.message}
+                </p>
+              )}
               </div>
             </div>
 
