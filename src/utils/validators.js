@@ -47,3 +47,26 @@ export const contactSchema = z.object({
   email: z.string().email('Enter a valid email'),
   message: z.string().min(1, 'Message is required').max(5000),
 })
+
+export const loginSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
+})
+
+const minPasswordLength = 8
+export const changePasswordSchema = z
+  .object({
+    current_password: z.string().min(1, 'Current password is required'),
+    new_password: z
+      .string()
+      .min(minPasswordLength, `New password must be at least ${minPasswordLength} characters`),
+    confirm_password: z.string().min(1, 'Confirm your new password'),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: 'New passwords do not match',
+    path: ['confirm_password'],
+  })
+  .refine((data) => data.current_password !== data.new_password, {
+    message: 'New password must be different from current password',
+    path: ['new_password'],
+  })

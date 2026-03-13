@@ -101,11 +101,11 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 7: Admin auth + layout
 
-- [ ] `src/store/authStore.js` — Zustand + Supabase auth state (session, user)
-- [ ] `src/hooks/useAuth.js` — sign in, sign out, session persistence
-- [ ] `src/pages/admin/AdminLogin.jsx` — email/password; no sign-up; redirect to `/admin/dashboard` on success
-- [ ] `src/components/layout/AdminLayout.jsx` — sidebar/nav for dashboard, menu, orders, announcements, reports
-- [ ] `<AdminRoute>` wrapper: if not authenticated, redirect to `/admin/login`; use for all `/admin/*` routes
+- [x] `src/store/authStore.js` — Zustand + Supabase auth state (session, user)
+- [x] `src/hooks/useAuth.js` — sign in, sign out, session persistence
+- [x] `src/pages/admin/AdminLogin.jsx` — email/password; no sign-up; redirect to `/admin/dashboard` on success
+- [x] `src/components/layout/AdminLayout.jsx` — sidebar/nav for dashboard, menu, orders, announcements, reports
+- [x] `<AdminRoute>` wrapper: if not authenticated, redirect to `/admin/login`; use for all `/admin/*` routes
 - [ ] Create Nicki’s account once in Supabase Auth (manual)
 
 **Deliverable:** Admin can log in; all `/admin/*` routes protected; admin layout wraps dashboard pages.
