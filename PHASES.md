@@ -147,9 +147,9 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 11: Admin — Dashboard + Reports
 
-- [ ] `src/pages/admin/AdminDashboard.jsx` — stats: today’s orders, pending count, total revenue (deposits), “new” if desired; recent orders table (last 10); quick links to Add Menu Item, All Orders
-- [ ] `src/pages/admin/AdminReports.jsx` — date range; total revenue (deposits); orders by type; popular items; simple charts (e.g. Recharts)
-- [ ] `src/components/admin/RevenueChart.jsx` — bar/line for revenue over time
+- [x] `src/pages/admin/AdminDashboard.jsx` — stats: today’s orders, pending count, total revenue (deposits), “new” if desired; recent orders table (last 10); quick links to Add Menu Item, All Orders
+- [x] `src/pages/admin/AdminReports.jsx` — date range; total revenue (deposits); orders by type; popular items; simple charts (e.g. Recharts)
+- [x] `src/components/admin/RevenueChart.jsx` — bar/line for revenue over time
 
 **Deliverable:** Dashboard gives at-a-glance metrics; Reports give revenue and breakdowns.
 
