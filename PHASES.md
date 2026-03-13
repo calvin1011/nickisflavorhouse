@@ -92,8 +92,8 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 6: Order confirmation + contact form
 
-- [ ] Order Confirmation page: read `session_id`; fetch order by `stripe_session_id` (or from session) and show order number, items, deposit paid, balance due; Cash App/Zelle reminder; Instagram CTA
-- [ ] Contact page: form (name, email, message) → send via Resend to NICKI_EMAIL (new serverless `api/send-contact.js` or extend `notify.js`)
+- [x] Order Confirmation page: read `session_id`; fetch order by `stripe_session_id` (or from session) and show order number, items, deposit paid, balance due; Cash App/Zelle reminder; Instagram CTA
+- [x] Contact page: form (name, email, message) → send via Resend to NICKI_EMAIL (new serverless `api/send-contact.js` or extend `notify.js`)
 
 **Deliverable:** Confirmation shows real order details; contact form sends email to Nicki.
 

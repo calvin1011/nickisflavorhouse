@@ -1,17 +1,53 @@
 import { useSearchParams } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { useCartStore } from '@/store/cartStore'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { Instagram } from 'lucide-react'
+
+function formatDollars(dollars) {
+  if (typeof dollars !== 'number' || Number.isNaN(dollars)) return '$0.00'
+  return formatCurrency(Math.round(dollars * 100))
+}
 
 export function OrderConfirmation() {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const clearCart = useCartStore((s) => s.clearCart)
+  const [order, setOrder] = useState(null)
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(!!sessionId)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (sessionId) clearCart()
   }, [sessionId, clearCart])
+
+  useEffect(() => {
+    if (!sessionId) return
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    fetch(`${window.location.origin}/api/order-by-session?session_id=${encodeURIComponent(sessionId)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
+        return r.json()
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setOrder(data.order)
+          setItems(data.items || [])
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [sessionId])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -20,20 +56,60 @@ export function OrderConfirmation() {
         <h1 className="font-display text-3xl font-bold text-brand-foreground">
           Thank you
         </h1>
-        {sessionId ? (
-          <>
-            <p className="mt-4 text-brand-foreground/80">
-              Your deposit has been paid. We’ll send order confirmation details to your email.
-            </p>
-            <p className="mt-2 text-sm text-brand-foreground/60">
-              Balance due at pickup (Cash App or Zelle).
-            </p>
-          </>
-        ) : (
+        {!sessionId ? (
           <p className="mt-4 text-brand-foreground/80">
             No order session found. If you just completed payment, give us a moment and refresh.
           </p>
-        )}
+        ) : loading ? (
+          <p className="mt-4 text-brand-foreground/80">Loading your order...</p>
+        ) : error ? (
+          <p className="mt-4 text-brand-foreground/80">{error}</p>
+        ) : order ? (
+          <>
+            <p className="mt-4 text-brand-foreground/80">
+              Your deposit has been paid. Order <strong>{order.order_number}</strong> is confirmed.
+            </p>
+            <div className="mt-6 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
+              <h2 className="font-display text-lg font-semibold text-brand-foreground">Order summary</h2>
+              <ul className="mt-3 space-y-2 text-sm text-brand-foreground/90">
+                {items.map((item, i) => (
+                  <li key={i} className="flex justify-between">
+                    <span>{item.name} x{item.quantity}</span>
+                    <span>{formatCurrency(item.price * item.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+              <dl className="mt-4 space-y-1 border-t border-brand-muted/30 pt-4 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-brand-foreground/80">Subtotal</dt>
+                  <dd>{formatDollars(order.subtotal)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-brand-foreground/80">Deposit paid</dt>
+                  <dd>{formatDollars(order.deposit_amount)}</dd>
+                </div>
+                <div className="flex justify-between font-medium">
+                  <dt className="text-brand-foreground/80">Balance due at pickup</dt>
+                  <dd>{formatDollars(order.balance_due)}</dd>
+                </div>
+              </dl>
+            </div>
+            <p className="mt-6 text-sm text-brand-foreground/80">
+              Pay the balance at pickup with <strong>Cash App</strong> or <strong>Zelle</strong>.
+            </p>
+            <div className="mt-6">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-brand-primary hover:underline"
+              >
+                <Instagram size={18} aria-hidden />
+                Follow us on Instagram
+              </a>
+            </div>
+          </>
+        ) : null}
       </main>
       <Footer />
     </div>
