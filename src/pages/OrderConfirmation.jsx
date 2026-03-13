@@ -29,7 +29,7 @@ export function OrderConfirmation() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`${window.location.origin}/api/order-by-session?session_id=${encodeURIComponent(sessionId)}`)
+    fetch(`/api/order-by-session?session_id=${encodeURIComponent(sessionId)}`)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
         return r.json()
