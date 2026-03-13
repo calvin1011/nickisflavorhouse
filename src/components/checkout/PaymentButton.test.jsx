@@ -79,7 +79,8 @@ describe('PaymentButton', () => {
       const alert = screen.getByRole('alert')
       expect(
         alert.textContent.includes('Pickup date and time are required') ||
-          alert.textContent.includes('Use date format YYYY-MM-DD') ||
+          alert.textContent.includes('Pick a date') ||
+          alert.textContent.includes('Pick a valid date') ||
           alert.textContent.includes('Time is required')
       ).toBe(true)
     })

@@ -1,6 +1,9 @@
 import { z } from 'zod'
 
-const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use date format YYYY-MM-DD')
+const dateString = z
+  .string()
+  .min(1, 'Pick a date')
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick a valid date')
 const timeString = z.string().min(1, 'Time is required')
 const phoneString = z.string().min(10, 'Enter a valid phone number').max(20)
 
