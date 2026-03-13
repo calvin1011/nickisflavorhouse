@@ -1,10 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useCartStore, getCartSubtotal } from '@/store/cartStore'
 import { checkoutSchema } from '@/utils/validators'
-import { sanitizeOrder } from '@/lib/sanitize'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { DepositSummary } from './DepositSummary'
 import { CateringForm } from './CateringForm'
@@ -24,13 +23,7 @@ const defaultValues = {
   pickup_date: '',
   pickup_time: '',
   notes: '',
-  catering: {
-    event_date: '',
-    event_time: '',
-    event_location: '',
-    guest_count: 1,
-    catering_notes: '',
-  },
+  catering: undefined,
 }
 
 export function CheckoutForm() {
@@ -48,6 +41,21 @@ export function CheckoutForm() {
 
   const orderType = methods.watch('order_type')
   const showCatering = orderType === 'catering' || hasCatering
+
+  useEffect(() => {
+    const currentCatering = methods.getValues('catering')
+    if (showCatering && !currentCatering) {
+      methods.setValue('catering', {
+        event_date: '',
+        event_time: '',
+        event_location: '',
+        guest_count: 1,
+        catering_notes: '',
+      })
+    } else if (!showCatering && currentCatering) {
+      methods.setValue('catering', undefined)
+    }
+  }, [showCatering, methods])
 
   const onSubmit = () => {
     // Payment is handled by PaymentButton via handleSubmit(PaymentButton.onSubmit)
