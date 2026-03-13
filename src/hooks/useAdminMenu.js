@@ -23,7 +23,7 @@ export function useAdminMenu() {
           .order('sort_order', { ascending: true, nullsFirst: false }),
         supabase
           .from('menu_items')
-          .select('id, name, description, category_id, price, image_url, is_catering, sort_order, available, min_price, max_price')
+          .select('id, name, description, category_id, price, image_url, is_catering, sort_order, available, catering_min_price, catering_max_price')
           .order('sort_order', { ascending: true, nullsFirst: false }),
       ])
       if (categoriesRes.error) throw categoriesRes.error

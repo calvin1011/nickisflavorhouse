@@ -54,7 +54,7 @@ async function uploadImage(file) {
  *   open: boolean
  *   onClose: () => void
  *   onSuccess: () => void
- *   item: { id: string, name: string, description?: string, category_id: string, price: number, image_url?: string | null, is_catering?: boolean, sort_order?: number, min_price?: number | null, max_price?: number | null } | null
+ *   item: { id: string, name: string, description?: string, category_id: string, price: number, image_url?: string | null, is_catering?: boolean, sort_order?: number, catering_min_price?: number | null, catering_max_price?: number | null } | null
  *   categories: Array<{ id: string, name: string }>
  * }}
  */
@@ -94,8 +94,8 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
         price: (item.price ?? 0) / 100,
         is_catering: item.is_catering ?? false,
         sort_order: item.sort_order ?? 0,
-        min_price: item.min_price != null ? item.min_price / 100 : null,
-        max_price: item.max_price != null ? item.max_price / 100 : null,
+        min_price: item.catering_min_price != null ? item.catering_min_price / 100 : null,
+        max_price: item.catering_max_price != null ? item.catering_max_price / 100 : null,
       })
     } else {
       reset({
@@ -151,8 +151,8 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
       image_url: imageUrl,
       is_catering: !!data.is_catering,
       sort_order: Number(data.sort_order) || 0,
-      min_price: minPriceCents,
-      max_price: maxPriceCents,
+      catering_min_price: minPriceCents,
+      catering_max_price: maxPriceCents,
     }
     if (!supabase) return
     try {
