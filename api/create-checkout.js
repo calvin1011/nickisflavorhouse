@@ -8,12 +8,12 @@ import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 const DEPOSIT_PERCENT = 0.5
-const MIN_DEPOSIT_CENTS = 2000
+const MIN_DEPOSIT_DOLLARS = 20
 
-function calculateDeposit(subtotalCents) {
-  if (typeof subtotalCents !== 'number' || subtotalCents <= 0) return 0
-  const byPercent = Math.round(subtotalCents * DEPOSIT_PERCENT)
-  return Math.max(byPercent, MIN_DEPOSIT_CENTS)
+function calculateDeposit(subtotalDollars) {
+  if (typeof subtotalDollars !== 'number' || subtotalDollars <= 0) return 0
+  const byPercent = subtotalDollars * DEPOSIT_PERCENT
+  return Math.max(byPercent, MIN_DEPOSIT_DOLLARS)
 }
 
 function sanitizeString(str) {
@@ -58,11 +58,11 @@ const checkoutPayloadSchema = z.object({
   items: z.array(z.object({
     id: z.string().uuid(),
     name: z.string().min(1).max(500),
-    price: z.number().int().min(0),
+    price: z.number().min(0),
     quantity: z.number().int().min(1).max(99),
     is_catering: z.boolean().optional(),
   })).min(1),
-  subtotal_cents: z.number().int().min(1),
+  subtotal: z.number().min(0),
 }).refine(
   (data) => {
     if (data.order_type === 'pickup') return !!data.pickup_date && !!data.pickup_time
@@ -78,9 +78,9 @@ const checkoutPayloadSchema = z.object({
 ).refine(
   (data) => {
     const computed = data.items.reduce((sum, i) => sum + i.price * i.quantity, 0)
-    return computed === data.subtotal_cents
+    return Math.abs(computed - data.subtotal) < 0.02
   },
-  { message: 'Subtotal does not match items', path: ['subtotal_cents'] }
+  { message: 'Subtotal does not match items', path: ['subtotal'] }
 )
 
 function generateOrderNumber() {
@@ -125,9 +125,9 @@ export default async function handler(req, res) {
   }
 
   const data = sanitizeOrder(parsed.data)
-  const subtotalCents = data.subtotal_cents
-  const depositCents = calculateDeposit(subtotalCents)
-  const balanceDueCents = Math.max(0, subtotalCents - depositCents)
+  const subtotalDollars = data.subtotal
+  const depositDollars = calculateDeposit(subtotalDollars)
+  const balanceDueDollars = Math.max(0, subtotalDollars - depositDollars)
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const orderNumber = generateOrderNumber()
@@ -141,9 +141,9 @@ export default async function handler(req, res) {
     order_type: data.order_type,
     status: 'pending',
     payment_status: 'pending',
-    subtotal: subtotalCents / 100,
-    deposit_amount: depositCents / 100,
-    balance_due: balanceDueCents / 100,
+    subtotal: subtotalDollars,
+    deposit_amount: depositDollars,
+    balance_due: balanceDueDollars,
     notes: data.notes || null,
     pickup_date: data.pickup_date || null,
     pickup_time: data.pickup_time || null,
@@ -200,7 +200,7 @@ export default async function handler(req, res) {
               name: "Deposit — Nicki's Flavor House",
               description: `Order ${orderNumber} — 50% deposit (balance due at pickup)`,
             },
-            unit_amount: depositCents,
+            unit_amount: Math.round(depositDollars * 100),
           },
           quantity: 1,
         },

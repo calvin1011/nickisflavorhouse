@@ -224,7 +224,7 @@ export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrd
 }
 
 function formatCurrencyLine(item) {
-  const priceCents = Number(item.price) || 0
+  const priceDollars = Number(item.price) || 0
   const qty = Number(item.quantity) || 0
-  return formatCurrency(priceCents * qty)
+  return formatCurrency(priceDollars * qty)
 }

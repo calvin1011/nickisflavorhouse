@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 /**
  * Expected Supabase schema:
  * - categories: id, name, sort_order (optional)
- * - menu_items: id, name, description, category_id, price (integer cents), image_url, is_catering (boolean), sort_order.
+ * - menu_items: id, name, description, category_id, price (dollars), image_url, is_catering (boolean), sort_order.
  *   If column "available" (boolean, default true) exists, add it to the select below and items with available=false are hidden.
  */
 export function useMenu() {

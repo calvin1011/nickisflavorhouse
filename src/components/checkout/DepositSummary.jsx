@@ -2,11 +2,11 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { calculateDeposit, calculateBalanceDue } from '@/utils/depositCalc'
 
 /**
- * @param {{ subtotalCents: number }} props
+ * @param {{ subtotal: number }} props - subtotal in dollars
  */
-export function DepositSummary({ subtotalCents }) {
-  const depositCents = calculateDeposit(subtotalCents)
-  const balanceDueCents = calculateBalanceDue(subtotalCents, depositCents)
+export function DepositSummary({ subtotal }) {
+  const deposit = calculateDeposit(subtotal)
+  const balanceDue = calculateBalanceDue(subtotal, deposit)
 
   return (
     <div className="rounded-lg border border-brand-muted/30 bg-brand-background p-4">
@@ -14,19 +14,19 @@ export function DepositSummary({ subtotalCents }) {
         <div className="flex justify-between">
           <dt className="text-brand-foreground/80">Subtotal</dt>
           <dd className="font-medium text-brand-foreground">
-            {formatCurrency(subtotalCents)}
+            {formatCurrency(subtotal)}
           </dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-brand-foreground/80">Deposit (50%)</dt>
           <dd className="font-medium text-brand-foreground">
-            {formatCurrency(depositCents)}
+            {formatCurrency(deposit)}
           </dd>
         </div>
         <div className="flex justify-between pt-2 text-base">
           <dt className="font-medium text-brand-foreground/80">Balance due at pickup</dt>
           <dd className="font-semibold text-brand-foreground">
-            {formatCurrency(balanceDueCents)}
+            {formatCurrency(balanceDue)}
           </dd>
         </div>
       </dl>

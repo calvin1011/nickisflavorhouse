@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
  */
 export function CartDrawer({ open, onClose }) {
   const items = useCartStore((s) => s.items)
-  const subtotalCents = useCartStore(getCartSubtotal)
+  const subtotal = useCartStore(getCartSubtotal)
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -79,7 +79,7 @@ export function CartDrawer({ open, onClose }) {
                   <CartItem key={item.id} {...item} />
                 ))}
               </div>
-              <CartSummary subtotalCents={subtotalCents} onClose={onClose} />
+              <CartSummary subtotal={subtotal} onClose={onClose} />
             </>
           )}
         </div>

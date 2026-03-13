@@ -13,7 +13,7 @@ export function PaymentButton({ children = 'Pay Deposit', disabled, className })
   const [validationMessage, setValidationMessage] = useState(null)
   const { handleSubmit, formState } = useFormContext()
   const items = useCartStore((s) => s.items)
-  const subtotalCents = useCartStore(getCartSubtotal)
+  const subtotal = useCartStore(getCartSubtotal)
   const buttonRef = useRef(null)
 
   function getFirstErrorMessage(errors) {
@@ -56,7 +56,7 @@ export function PaymentButton({ children = 'Pay Deposit', disabled, className })
         quantity,
         is_catering: !!is_catering,
       })),
-      subtotal_cents: subtotalCents,
+      subtotal,
     }
 
     try {

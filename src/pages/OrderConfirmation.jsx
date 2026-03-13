@@ -6,11 +6,6 @@ import { useCartStore } from '@/store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { Instagram } from 'lucide-react'
 
-function formatDollars(dollars) {
-  if (typeof dollars !== 'number' || Number.isNaN(dollars)) return '$0.00'
-  return formatCurrency(Math.round(dollars * 100))
-}
-
 export function OrderConfirmation() {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
@@ -82,15 +77,15 @@ export function OrderConfirmation() {
               <dl className="mt-4 space-y-1 border-t border-brand-muted/30 pt-4 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-brand-foreground/80">Subtotal</dt>
-                  <dd>{formatDollars(order.subtotal)}</dd>
+                  <dd>{formatCurrency(order.subtotal)}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-brand-foreground/80">Deposit paid</dt>
-                  <dd>{formatDollars(order.deposit_amount)}</dd>
+                  <dd>{formatCurrency(order.deposit_amount)}</dd>
                 </div>
                 <div className="flex justify-between font-medium">
                   <dt className="text-brand-foreground/80">Balance due at pickup</dt>
-                  <dd>{formatDollars(order.balance_due)}</dd>
+                  <dd>{formatCurrency(order.balance_due)}</dd>
                 </div>
               </dl>
             </div>

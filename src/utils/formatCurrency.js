@@ -1,24 +1,23 @@
 /**
- * Format a number as USD currency.
- * @param {number} cents - Amount in cents
+ * Format a number as USD currency. DB and frontend use dollars; only Stripe uses cents.
+ * @param {number} amount - Amount in dollars
  * @returns {string} e.g. "$12.50"
  */
-export function formatCurrency(cents) {
-  if (typeof cents !== 'number' || Number.isNaN(cents)) return '$0.00'
+export function formatCurrency(amount) {
+  if (typeof amount !== 'number' || Number.isNaN(amount)) return '$0.00'
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(cents / 100)
+  }).format(amount)
 }
 
 /**
- * Format a dollar amount (already in dollars, e.g. from orders table).
+ * Alias for formatCurrency (amount in dollars).
  * @param {number} dollars - Amount in dollars
  * @returns {string} e.g. "$12.50"
  */
 export function formatDollars(dollars) {
-  if (typeof dollars !== 'number' || Number.isNaN(dollars)) return '$0.00'
-  return formatCurrency(Math.round(dollars * 100))
+  return formatCurrency(dollars)
 }

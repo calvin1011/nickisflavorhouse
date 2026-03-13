@@ -5,7 +5,7 @@ import { persist } from 'zustand/middleware'
  * @typedef {Object} CartLineItem
  * @property {string} id - menu_items.id
  * @property {string} name
- * @property {number} price - cents per unit
+ * @property {number} price - dollars per unit (DB stores dollars)
  * @property {number} quantity
  * @property {string} [image_url]
  * @property {boolean} [is_catering]

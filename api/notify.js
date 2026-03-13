@@ -35,7 +35,7 @@ export async function sendEmailNotification(order) {
       : null,
     '',
     'Items:',
-    ...(order.items || []).map((i) => `  ${i.name} x${i.quantity} — $${((i.price * i.quantity) / 100).toFixed(2)}`),
+    ...(order.items || []).map((i) => `  ${i.name} x${i.quantity} — $${(Number(i.price) * Number(i.quantity)).toFixed(2)}`),
     '',
     `Subtotal: $${Number(order.subtotal).toFixed(2)}`,
     `Deposit: $${Number(order.deposit_amount).toFixed(2)}`,

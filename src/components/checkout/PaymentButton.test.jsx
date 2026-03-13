@@ -46,7 +46,7 @@ describe('PaymentButton', () => {
     Object.defineProperty(window, 'location', { value: location, writable: true })
     useCartStore.setState({
       items: [
-        { id: 'item-1', name: 'Item One', price: 1000, quantity: 1, is_catering: false },
+        { id: 'item-1', name: 'Item One', price: 10, quantity: 1, is_catering: false },
       ],
     })
     vi.stubGlobal('requestAnimationFrame', (cb) => setTimeout(cb, 0))
@@ -114,8 +114,8 @@ describe('PaymentButton', () => {
     expect(body.order_type).toBe('pickup')
     expect(body.pickup_date).toBe('2025-04-01')
     expect(body.items).toHaveLength(1)
-    expect(body.items[0]).toMatchObject({ id: 'item-1', name: 'Item One', price: 1000, quantity: 1 })
-    expect(body.subtotal_cents).toBe(1000)
+    expect(body.items[0]).toMatchObject({ id: 'item-1', name: 'Item One', price: 10, quantity: 1 })
+    expect(body.subtotal).toBe(10)
   })
 
   it('redirects to Stripe URL when API returns url', async () => {

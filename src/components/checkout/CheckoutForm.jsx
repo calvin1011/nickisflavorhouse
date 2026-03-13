@@ -29,7 +29,7 @@ const defaultValues = {
 export function CheckoutForm() {
   const navigate = useNavigate()
   const items = useCartStore((s) => s.items)
-  const subtotalCents = useCartStore(getCartSubtotal)
+  const subtotal = useCartStore(getCartSubtotal)
   const hasCatering = items.some((i) => i.is_catering)
 
   const [step, setStep] = useState(1)
@@ -93,7 +93,7 @@ export function CheckoutForm() {
                   </li>
                 ))}
               </ul>
-              <DepositSummary subtotalCents={subtotalCents} />
+              <DepositSummary subtotal={subtotal} />
             </div>
             <button
               type="button"
@@ -258,7 +258,7 @@ export function CheckoutForm() {
             </div>
 
             <div className="border-t border-brand-muted/30 pt-4">
-              <DepositSummary subtotalCents={subtotalCents} />
+              <DepositSummary subtotal={subtotal} />
               <PaymentButton
                 className="mt-4 w-full rounded-md bg-brand-primary px-4 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
               >

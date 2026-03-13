@@ -91,11 +91,11 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
         name: item.name ?? '',
         description: item.description ?? '',
         category_id: item.category_id ?? '',
-        price: (item.price ?? 0) / 100,
+        price: item.price ?? 0,
         is_catering: item.is_catering ?? false,
         sort_order: item.sort_order ?? 0,
-        min_price: item.catering_min_price != null ? item.catering_min_price / 100 : null,
-        max_price: item.catering_max_price != null ? item.catering_max_price / 100 : null,
+        min_price: item.catering_min_price ?? null,
+        max_price: item.catering_max_price ?? null,
       })
     } else {
       reset({
@@ -140,19 +140,19 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
         return
       }
     }
-    const priceCents = Math.round(Number(data.price) * 100)
-    const minPriceCents = data.min_price != null && data.min_price !== '' ? Math.round(Number(data.min_price) * 100) : null
-    const maxPriceCents = data.max_price != null && data.max_price !== '' ? Math.round(Number(data.max_price) * 100) : null
+    const priceDollars = Number(data.price)
+    const minPriceDollars = data.min_price != null && data.min_price !== '' ? Number(data.min_price) : null
+    const maxPriceDollars = data.max_price != null && data.max_price !== '' ? Number(data.max_price) : null
     const payload = {
       name: sanitizeString(data.name),
       description: sanitizeString(data.description || ''),
       category_id: data.category_id,
-      price: priceCents,
+      price: priceDollars,
       image_url: imageUrl,
       is_catering: !!data.is_catering,
       sort_order: Number(data.sort_order) || 0,
-      catering_min_price: minPriceCents,
-      catering_max_price: maxPriceCents,
+      catering_min_price: minPriceDollars,
+      catering_max_price: maxPriceDollars,
     }
     if (!supabase) return
     try {
