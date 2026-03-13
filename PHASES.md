@@ -137,9 +137,9 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 10: Admin — Announcements
 
-- [ ] `src/pages/admin/AdminAnnouncements.jsx` — list announcements; create/edit/delete; active/inactive toggle
-- [ ] `src/components/admin/AnnouncementForm.jsx` — title, body, image upload (`announcement-images/`), is_active
-- [ ] Home page: fetch active announcements and render banner(s)
+- [x] `src/pages/admin/AdminAnnouncements.jsx` — list announcements; create/edit/delete; active/inactive toggle
+- [x] `src/components/admin/AnnouncementForm.jsx` — title, body, image upload (`announcement-images/`), is_active
+- [x] Home page: fetch active announcements and render banner(s)
 
 **Deliverable:** Nicki can manage announcements; homepage shows active ones.
 

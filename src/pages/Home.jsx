@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { useAnnouncements } from '@/hooks/useAnnouncements'
 
 export function Home() {
+  const { announcements, loading } = useAnnouncements()
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -22,12 +25,54 @@ export function Home() {
           </Link>
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <h2 className="font-display text-2xl font-semibold text-brand-foreground">
-            Announcements
-          </h2>
-          <p className="mt-2 text-brand-foreground/70">Coming soon.</p>
-        </section>
+        {announcements.length > 0 && (
+          <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+            <h2 className="font-display text-2xl font-semibold text-brand-foreground mb-6">
+              Announcements
+            </h2>
+            <div className="space-y-6">
+              {announcements.map((a) => (
+                <article
+                  key={a.id}
+                  className="overflow-hidden rounded-lg border border-brand-muted/30 bg-white shadow-sm"
+                >
+                  <div className="flex flex-col sm:flex-row">
+                    {a.image_url && (
+                      <div className="sm:w-1/3 shrink-0">
+                        <img
+                          src={a.image_url}
+                          alt=""
+                          className="h-48 w-full object-cover sm:h-auto sm:min-h-[180px]"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 p-6">
+                      <h3 className="font-display text-xl font-semibold text-brand-foreground">
+                        {a.title}
+                      </h3>
+                      {a.body && (
+                        <p className="mt-2 text-brand-foreground/80 whitespace-pre-wrap">
+                          {a.body}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!loading && announcements.length === 0 && (
+          <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+            <h2 className="font-display text-2xl font-semibold text-brand-foreground">
+              Announcements
+            </h2>
+            <p className="mt-2 text-brand-foreground/70">
+              No announcements right now. Check back soon.
+            </p>
+          </section>
+        )}
 
         <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
           <h2 className="font-display text-2xl font-semibold text-brand-foreground">
