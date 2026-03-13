@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { useCartStore, getCartSubtotal } from '@/store/cartStore'
 import { sanitizeOrder } from '@/lib/sanitize'
@@ -10,11 +10,25 @@ import { sanitizeOrder } from '@/lib/sanitize'
 export function PaymentButton({ children = 'Pay Deposit', disabled, className }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [validationMessage, setValidationMessage] = useState(null)
   const { handleSubmit, formState } = useFormContext()
   const items = useCartStore((s) => s.items)
   const subtotalCents = useCartStore(getCartSubtotal)
+  const buttonRef = useRef(null)
+
+  const onValidationFailed = () => {
+    setValidationMessage('Please fix the errors above and try again.')
+    setError(null)
+    const firstError = document.querySelector('[role="alert"]')
+    if (firstError) {
+      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    } else {
+      buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
 
   const onSubmit = async (data) => {
+    setValidationMessage(null)
     setError(null)
     setLoading(true)
     const sanitized = sanitizeOrder(data)
@@ -56,15 +70,20 @@ export function PaymentButton({ children = 'Pay Deposit', disabled, className })
   const isDisabled = disabled || formState.isSubmitting || loading
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" ref={buttonRef}>
       <button
         type="button"
-        onClick={handleSubmit(onSubmit)}
+        onClick={handleSubmit(onSubmit, onValidationFailed)}
         disabled={isDisabled}
         className={className}
       >
         {loading ? 'Redirecting…' : children}
       </button>
+      {validationMessage && (
+        <p className="text-sm text-amber-700 dark:text-amber-400" role="alert">
+          {validationMessage}
+        </p>
+      )}
       {error && (
         <p className="text-sm text-red-600" role="alert">
           {error}
