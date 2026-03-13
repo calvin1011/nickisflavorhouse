@@ -125,6 +125,18 @@ export function AdminAccount() {
           </button>
         </form>
       </section>
+
+      <section className="mt-10 max-w-md">
+        <h2 className="font-display text-lg font-semibold text-brand-foreground">
+          Instagram feed
+        </h2>
+        <p className="mt-1 text-sm text-brand-foreground/70">
+          The Instagram block on the home page is configured once by your developer in the hosting environment (e.g. Vercel). They set your Instagram Business Account ID and a long-lived access token. After that, the feed updates automatically whenever someone visits the site—no need to connect here or sign in again.
+        </p>
+        <p className="mt-2 text-sm text-brand-foreground/70">
+          If the feed is missing or shows an error, ask your developer to add <code className="rounded bg-brand-muted/30 px-1 py-0.5 text-xs">INSTAGRAM_USER_ID</code>, <code className="rounded bg-brand-muted/30 px-1 py-0.5 text-xs">INSTAGRAM_ACCESS_TOKEN</code>, and <code className="rounded bg-brand-muted/30 px-1 py-0.5 text-xs">INSTAGRAM_PROFILE_URL</code> in the project&apos;s environment variables.
+        </p>
+      </section>
     </div>
   )
 }
