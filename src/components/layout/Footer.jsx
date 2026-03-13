@@ -30,6 +30,12 @@ export function Footer() {
             >
               Contact
             </Link>
+            <Link
+              to="/admin/login"
+              className="text-brand-foreground/50 hover:text-brand-foreground/70 text-sm transition-colors"
+            >
+              Admin
+            </Link>
           </div>
         </div>
         <p className="mt-6 text-center text-sm text-brand-foreground/60">
