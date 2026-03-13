@@ -53,6 +53,18 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 })
 
+export const menuItemSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(500),
+  description: z.string().max(2000).optional().default(''),
+  category_id: z.string().uuid('Select a category'),
+  price: z.coerce.number().int().min(0, 'Price must be 0 or more'),
+  image_url: z.string().url().optional().nullable().or(z.literal('')),
+  is_catering: z.boolean().optional().default(false),
+  sort_order: z.coerce.number().int().min(0).optional().default(0),
+  min_price: z.coerce.number().int().min(0).optional().nullable(),
+  max_price: z.coerce.number().int().min(0).optional().nullable(),
+})
+
 const minPasswordLength = 8
 export const changePasswordSchema = z
   .object({

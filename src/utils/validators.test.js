@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkoutSchema, cateringSchema, contactSchema, loginSchema, changePasswordSchema } from './validators'
+import { checkoutSchema, cateringSchema, contactSchema, loginSchema, changePasswordSchema, menuItemSchema } from './validators'
 
 describe('checkoutSchema', () => {
   const validPickup = {
@@ -162,6 +162,39 @@ describe('changePasswordSchema', () => {
         new_password: 'samepass123',
         confirm_password: 'samepass123',
       })
+    ).toThrow()
+  })
+})
+
+describe('menuItemSchema', () => {
+  const validItem = {
+    name: 'Jerk Chicken',
+    description: 'Spicy and tender',
+    category_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    price: 1500,
+    is_catering: false,
+    sort_order: 0,
+  }
+
+  it('accepts valid menu item', () => {
+    expect(menuItemSchema.parse(validItem)).toMatchObject(validItem)
+  })
+
+  it('rejects empty name', () => {
+    expect(() =>
+      menuItemSchema.parse({ ...validItem, name: '' })
+    ).toThrow()
+  })
+
+  it('rejects invalid category_id', () => {
+    expect(() =>
+      menuItemSchema.parse({ ...validItem, category_id: 'not-a-uuid' })
+    ).toThrow()
+  })
+
+  it('rejects negative price', () => {
+    expect(() =>
+      menuItemSchema.parse({ ...validItem, price: -100 })
     ).toThrow()
   })
 })

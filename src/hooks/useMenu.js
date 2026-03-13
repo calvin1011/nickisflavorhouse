@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 /**
  * Expected Supabase schema:
  * - categories: id, name, sort_order (optional)
- * - menu_items: id, name, description, category_id, price (integer cents), image_url, is_catering (boolean), sort_order (optional). Add optional `available` (boolean) later to filter.
+ * - menu_items: id, name, description, category_id, price (integer cents), image_url, is_catering (boolean), sort_order, available (boolean, default true).
  */
 export function useMenu() {
   const [categories, setCategories] = useState([])
@@ -30,7 +30,7 @@ export function useMenu() {
             .order('sort_order', { ascending: true, nullsFirst: false }),
           supabase
             .from('menu_items')
-            .select('id, name, description, category_id, price, image_url, is_catering, sort_order')
+            .select('id, name, description, category_id, price, image_url, is_catering, sort_order, available')
             .order('sort_order', { ascending: true, nullsFirst: false }),
         ])
 
@@ -39,8 +39,10 @@ export function useMenu() {
         if (categoriesRes.error) throw categoriesRes.error
         if (itemsRes.error) throw itemsRes.error
 
+        const allItems = itemsRes.data ?? []
+        const availableItems = allItems.filter((item) => item.available !== false)
         setCategories(categoriesRes.data ?? [])
-        setItems(itemsRes.data ?? [])
+        setItems(availableItems)
       } catch (err) {
         if (!cancelled) {
           setError(err)

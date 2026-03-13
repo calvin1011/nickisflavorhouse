@@ -106,7 +106,7 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 - [x] `src/pages/admin/AdminLogin.jsx` — email/password; no sign-up; redirect to `/admin/dashboard` on success
 - [x] `src/components/layout/AdminLayout.jsx` — sidebar/nav for dashboard, menu, orders, announcements, reports
 - [x] `<AdminRoute>` wrapper: if not authenticated, redirect to `/admin/login`; use for all `/admin/*` routes
-- [ ] Create Nicki’s account once in Supabase Auth (manual)
+- [x] Create Nicki’s account once in Supabase Auth (manual)
 
 **Deliverable:** Admin can log in; all `/admin/*` routes protected; admin layout wraps dashboard pages.
 
@@ -114,10 +114,10 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 8: Admin — Menu manager
 
-- [ ] `src/pages/admin/AdminMenu.jsx` — list all menu items (with category), inline available/unavailable toggle
-- [ ] `src/components/admin/MenuItemForm.jsx` — create/edit: name, description, category, price, image upload (Supabase Storage `menu-images/`), catering toggle, min/max price, sort order
-- [ ] Upload to Storage with RLS (authenticated only); set `image_url` on `menu_items`
-- [ ] Add / Edit / Delete menu items; validate image type (webp/jpg/png) and size (<5MB)
+- [x] `src/pages/admin/AdminMenu.jsx` — list all menu items (with category), inline available/unavailable toggle
+- [x] `src/components/admin/MenuItemForm.jsx` — create/edit: name, description, category, price, image upload (Supabase Storage `menu-images/`), catering toggle, min/max price, sort order
+- [x] Upload to Storage with RLS (authenticated only); set `image_url` on `menu_items`
+- [x] Add / Edit / Delete menu items; validate image type (webp/jpg/png) and size (<5MB)
 
 **Deliverable:** Nicki can CRUD menu items and upload photos.
 
