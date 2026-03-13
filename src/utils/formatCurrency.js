@@ -12,3 +12,13 @@ export function formatCurrency(cents) {
     maximumFractionDigits: 2,
   }).format(cents / 100)
 }
+
+/**
+ * Format a dollar amount (already in dollars, e.g. from orders table).
+ * @param {number} dollars - Amount in dollars
+ * @returns {string} e.g. "$12.50"
+ */
+export function formatDollars(dollars) {
+  if (typeof dollars !== 'number' || Number.isNaN(dollars)) return '$0.00'
+  return formatCurrency(Math.round(dollars * 100))
+}

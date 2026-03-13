@@ -125,11 +125,11 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 9: Admin — Orders
 
-- [ ] `src/hooks/useOrders.js` — fetch orders (and optionally subscribe to Supabase Realtime)
-- [ ] `src/pages/admin/AdminOrders.jsx` — full order table; filters: All, Pending, Confirmed, Preparing, Ready, Completed, Cancelled
-- [ ] `src/components/admin/OrderTable.jsx` + `OrderStatusBadge.jsx`
-- [ ] Order detail drawer: customer info, items, deposit, balance due; status dropdown to update; notes
-- [ ] Update order status (and optionally `updated_at`) in Supabase; realtime refresh if subscribed
+- [x] `src/hooks/useOrders.js` — fetch orders (and optionally subscribe to Supabase Realtime)
+- [x] `src/pages/admin/AdminOrders.jsx` — full order table; filters: All, Pending, Confirmed, Preparing, Ready, Completed, Cancelled
+- [x] `src/components/admin/OrderTable.jsx` + `OrderStatusBadge.jsx`
+- [x] Order detail drawer: customer info, items, deposit, balance due; status dropdown to update; notes
+- [x] Update order status (and optionally `updated_at`) in Supabase; realtime refresh if subscribed
 
 **Deliverable:** Nicki can view and update order status from the dashboard.
 
