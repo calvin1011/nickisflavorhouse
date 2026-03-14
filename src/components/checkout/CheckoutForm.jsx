@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useCartStore, getCartSubtotal } from '@/store/cartStore'
 import { checkoutSchema } from '@/utils/validators'
-import { formatCurrency } from '@/utils/formatCurrency'
 import { DepositSummary } from './DepositSummary'
 import { CateringForm } from './CateringForm'
 import { PaymentButton } from './PaymentButton'
@@ -171,7 +170,7 @@ export function CheckoutForm() {
               </div>
 
               <div>
-                <label className={labelClass}>Order type</label>
+                <span className={labelClass}>Order type</span>
                 <div className="mt-2 flex gap-4">
                   <label className="flex items-center gap-2">
                     <input

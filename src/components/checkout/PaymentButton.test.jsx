@@ -37,8 +37,6 @@ function TestForm({ defaultValues, children }) {
 
 describe('PaymentButton', () => {
   const mockFetch = vi.fn()
-  const originalFetch = global.fetch
-  const originalLocation = window.location
 
   beforeEach(() => {
     vi.stubGlobal('fetch', mockFetch)
