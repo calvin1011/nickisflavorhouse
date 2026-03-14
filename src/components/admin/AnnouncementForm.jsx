@@ -208,7 +208,9 @@ export function AnnouncementForm({
           </div>
 
           <div>
-            <label className={labelClass}>Image</label>
+            <label htmlFor="announcement-image" className={labelClass}>
+              Image
+            </label>
             {announcement?.image_url && (
               <p className="mt-1 text-sm text-brand-foreground/70">
                 Current:{' '}
@@ -224,6 +226,7 @@ export function AnnouncementForm({
               </p>
             )}
             <input
+              id="announcement-image"
               type="file"
               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               className="mt-1 block w-full text-sm text-brand-foreground file:mr-4 file:rounded file:border-0 file:bg-brand-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white file:hover:bg-brand-primary-dark"

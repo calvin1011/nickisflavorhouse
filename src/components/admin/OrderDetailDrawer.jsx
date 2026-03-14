@@ -22,14 +22,6 @@ function formatDate(iso) {
   })
 }
 
-function formatTime(iso) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
-
 export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrderItems }) {
   const [items, setItems] = useState([])
   const [itemsLoading, setItemsLoading] = useState(false)
@@ -39,7 +31,7 @@ export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrd
 
   useEffect(() => {
     if (order) setStatusValue(order.status ?? 'pending')
-  }, [order?.id, order?.status])
+  }, [order])
 
   useEffect(() => {
     if (!open || !order || !getOrderItems) return
@@ -52,7 +44,7 @@ export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrd
         setItems([])
       })
       .finally(() => setItemsLoading(false))
-  }, [open, order?.id, getOrderItems])
+  }, [open, order, getOrderItems])
 
   const handleStatusChange = async () => {
     if (!order || statusValue === (order.status ?? 'pending')) return

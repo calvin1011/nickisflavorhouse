@@ -65,7 +65,6 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setValue,
     watch,
     reset,
   } = useForm({
@@ -335,13 +334,16 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
           )}
 
           <div>
-            <label className={labelClass}>Image</label>
+            <label htmlFor="menu-item-image" className={labelClass}>
+              Image
+            </label>
             {item?.image_url && (
               <p className="mt-1 text-sm text-brand-foreground/70">
                 Current: <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="text-brand-primary underline">View</a>. Upload a new file to replace.
               </p>
             )}
             <input
+              id="menu-item-image"
               type="file"
               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               className="mt-1 block w-full text-sm text-brand-foreground file:mr-4 file:rounded file:border-0 file:bg-brand-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white file:hover:bg-brand-primary-dark"

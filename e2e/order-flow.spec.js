@@ -13,7 +13,6 @@ const STRIPE_TEST_CVC = '123'
 test.describe('Order flow', () => {
   test('place order, pay deposit, see confirmation; admin can update status', async ({
     page,
-    context,
   }) => {
     await page.goto('/menu')
     await expect(page.getByRole('heading', { name: 'Menu' })).toBeVisible()
