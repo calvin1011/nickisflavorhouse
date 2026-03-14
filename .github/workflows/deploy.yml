@@ -1,0 +1,50 @@
+# CD: Build on push to main and upload artifact. Deploy via your host's integration or add a job below.
+# Vercel: connect this repo in Vercel dashboard for auto-deploy, or add a job that uses Vercel CLI.
+# Netlify / Cloudflare: add a job that uploads dist to their API or CLI.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_APP_URL: https://nickisflavorhouse.com
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # Optional: add a job to deploy to Vercel (e.g. amondnet/vercel-action or vercel CLI),
+  # Netlify, or Cloudflare Pages using the build artifact. CI is not tied to any single host.
