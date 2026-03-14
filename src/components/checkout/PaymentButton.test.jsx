@@ -55,13 +55,13 @@ describe('PaymentButton', () => {
     mockFetch.mockReset()
   })
 
-  it('renders Pay Deposit button by default', () => {
+  it('renders Pay full amount button by default', () => {
     render(
       <TestForm defaultValues={validPickupDefaults}>
         <PaymentButton />
       </TestForm>
     )
-    expect(screen.getByRole('button', { name: /pay deposit/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /pay full amount/i })).toBeInTheDocument()
   })
 
   it('shows validation message when form is invalid and button is clicked', async () => {
@@ -70,7 +70,7 @@ describe('PaymentButton', () => {
         <PaymentButton />
       </TestForm>
     )
-    const button = screen.getByRole('button', { name: /pay deposit/i })
+    const button = screen.getByRole('button', { name: /pay full amount/i })
     fireEvent.click(button)
 
     await waitFor(() => {
@@ -93,7 +93,7 @@ describe('PaymentButton', () => {
         <PaymentButton />
       </TestForm>
     )
-    const button = screen.getByRole('button', { name: /pay deposit/i })
+    const button = screen.getByRole('button', { name: /pay full amount/i })
     fireEvent.click(button)
 
     await waitFor(() => {
@@ -124,7 +124,7 @@ describe('PaymentButton', () => {
         <PaymentButton />
       </TestForm>
     )
-    fireEvent.click(screen.getByRole('button', { name: /pay deposit/i }))
+    fireEvent.click(screen.getByRole('button', { name: /pay full amount/i }))
 
     await waitFor(() => {
       expect(window.location.href).toBe('https://stripe.com/session')
@@ -139,7 +139,7 @@ describe('PaymentButton', () => {
         <PaymentButton />
       </TestForm>
     )
-    fireEvent.click(screen.getByRole('button', { name: /pay deposit/i }))
+    fireEvent.click(screen.getByRole('button', { name: /pay full amount/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Validation failed')
@@ -154,7 +154,7 @@ describe('PaymentButton', () => {
         <PaymentButton />
       </TestForm>
     )
-    fireEvent.click(screen.getByRole('button', { name: /pay deposit/i }))
+    fireEvent.click(screen.getByRole('button', { name: /pay full amount/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/something went wrong/i)
@@ -175,7 +175,7 @@ describe('PaymentButton', () => {
         <PaymentButton />
       </TestForm>
     )
-    const button = screen.getByRole('button', { name: /pay deposit/i })
+    const button = screen.getByRole('button', { name: /pay full amount/i })
     fireEvent.click(button)
 
     await waitFor(() => {

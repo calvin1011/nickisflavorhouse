@@ -193,7 +193,7 @@ export function AdminReports() {
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-lg border border-brand-muted/30 bg-white p-4 shadow-sm">
               <p className="text-sm font-medium text-brand-foreground/70">
-                Total revenue (deposits)
+                Total revenue
               </p>
               <p className="mt-1 text-2xl font-bold text-brand-foreground">
                 {formatDollars(totalRevenue)}

@@ -195,18 +195,16 @@ export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrd
 
           <section className="border-t border-brand-muted/30 pt-4">
             <dl className="text-sm space-y-1">
-              <div className="flex justify-between text-brand-foreground/90">
-                <dt>Subtotal</dt>
+              <div className="flex justify-between font-medium text-brand-foreground">
+                <dt>Order total</dt>
                 <dd>{formatDollars(order.subtotal)}</dd>
               </div>
-              <div className="flex justify-between text-brand-foreground/90">
-                <dt>Deposit</dt>
-                <dd>{formatDollars(order.deposit_amount)}</dd>
-              </div>
-              <div className="flex justify-between font-medium text-brand-foreground">
-                <dt>Balance due</dt>
-                <dd>{formatDollars(order.balance_due)}</dd>
-              </div>
+              {order.payment_status === 'paid' && (
+                <div className="flex justify-between text-brand-foreground/90">
+                  <dt>Payment</dt>
+                  <dd>Paid in full</dd>
+                </div>
+              )}
             </dl>
           </section>
         </div>

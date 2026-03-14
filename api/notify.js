@@ -37,9 +37,8 @@ export async function sendEmailNotification(order) {
     'Items:',
     ...(order.items || []).map((i) => `  ${i.name} x${i.quantity} — $${(Number(i.price) * Number(i.quantity)).toFixed(2)}`),
     '',
-    `Subtotal: $${Number(order.subtotal).toFixed(2)}`,
-    `Deposit: $${Number(order.deposit_amount).toFixed(2)}`,
-    `Balance due: $${Number(order.balance_due).toFixed(2)}`,
+    `Order total: $${Number(order.subtotal).toFixed(2)}`,
+    'Paid in full',
     order.notes ? `Notes: ${order.notes}` : null,
     order.catering_notes ? `Catering notes: ${order.catering_notes}` : null,
   ].filter(Boolean)
@@ -77,7 +76,7 @@ function escapeHtml(s) {
 }
 
 /**
- * @param {object} order - Order with order_number, customer_name, subtotal, deposit_amount, balance_due
+ * @param {object} order - Order with order_number, customer_name, subtotal
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
 export async function sendPushNotification(order) {
@@ -89,7 +88,7 @@ export async function sendPushNotification(order) {
   const title = `Order ${order.order_number}`
   const message = [
     `${order.customer_name}`,
-    `Deposit $${Number(order.deposit_amount).toFixed(2)} · Balance $${Number(order.balance_due).toFixed(2)}`,
+    `Paid in full — $${Number(order.subtotal).toFixed(2)}`,
   ].join(' — ')
 
   const res = await fetch(`${NTFY_URL}/${topic}`, {
