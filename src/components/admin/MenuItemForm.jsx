@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { sanitizeString } from '@/lib/sanitize'
 import { cn } from '@/lib/utils'
 import { getStoragePathFromPublicUrl } from '@/lib/storage'
+import { ImageCropModal } from '@/components/admin/ImageCropModal'
 
 const BUCKET = 'menu-images'
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
@@ -96,11 +97,17 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
   const isCatering = watch('is_catering')
   const [imageError, setImageError] = useState(null)
   const [removeImage, setRemoveImage] = useState(false)
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [fileToCrop, setFileToCrop] = useState(null)
+  const [pendingImageUrl, setPendingImageUrl] = useState(null)
   const imageInputRef = useRef(null)
 
   useEffect(() => {
     if (!open) return
     setRemoveImage(false)
+    setPendingImageUrl(null)
+    setCropModalOpen(false)
+    setFileToCrop(null)
     if (item) {
       reset({
         name: item.name ?? '',
@@ -148,13 +155,13 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
     const err = validateImageFile(file)
     setImageError(err || null)
     if (file && err) return
-    let imageUrl = item?.image_url ?? null
+    let imageUrl = pendingImageUrl ?? item?.image_url ?? null
     if (removeImage) {
       imageUrl = null
       if (item?.image_url) {
         await removeStorageObject(BUCKET, item.image_url)
       }
-    } else if (file) {
+    } else if (!pendingImageUrl && file) {
       try {
         imageUrl = await uploadImage(file)
       } catch (err) {
@@ -379,6 +386,9 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
                 </div>
               </div>
             )}
+            {pendingImageUrl && (
+              <p className="mt-1 text-sm text-brand-foreground/70">New image ready (cropped). Save to use it.</p>
+            )}
             {item?.image_url && removeImage && (
               <p className="mt-1 text-sm text-brand-foreground/70">Image will be removed when you save.</p>
             )}
@@ -389,9 +399,36 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               className="mt-1 block w-full text-sm text-brand-foreground file:mr-4 file:rounded file:border-0 file:bg-brand-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-white file:hover:bg-brand-primary-dark"
               onChange={(e) => {
-                const err = validateImageFile(e.target.files?.[0])
+                const file = e.target.files?.[0]
+                const err = validateImageFile(file)
                 setImageError(err || null)
-                if (e.target.files?.[0]) setRemoveImage(false)
+                if (file && !err) {
+                  setRemoveImage(false)
+                  setFileToCrop(file)
+                  setCropModalOpen(true)
+                  e.target.value = ''
+                }
+              }}
+            />
+            <ImageCropModal
+              open={cropModalOpen}
+              file={fileToCrop}
+              onConfirm={async (blob) => {
+                const name = fileToCrop?.name || 'image.jpg'
+                const file = new File([blob], name, { type: blob.type })
+                try {
+                  const url = await uploadImage(file)
+                  setPendingImageUrl(url)
+                } catch (err) {
+                  console.error(err)
+                  setImageError('Upload failed')
+                }
+                setCropModalOpen(false)
+                setFileToCrop(null)
+              }}
+              onCancel={() => {
+                setCropModalOpen(false)
+                setFileToCrop(null)
               }}
             />
             {imageError && (

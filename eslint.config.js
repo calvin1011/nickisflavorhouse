@@ -30,6 +30,8 @@ export default [
         window: 'readonly',
         document: 'readonly',
         fetch: 'readonly',
+        File: 'readonly',
+        FileReader: 'readonly',
         FormData: 'readonly',
         URL: 'readonly',
         crypto: 'readonly',

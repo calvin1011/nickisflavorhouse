@@ -4,7 +4,8 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { useCartStore } from '@/store/cartStore'
 import { formatCurrency } from '@/utils/formatCurrency'
-import { Instagram } from 'lucide-react'
+import { siteConfig } from '@/lib/siteConfig'
+import { Instagram, MapPin } from 'lucide-react'
 
 export function OrderConfirmation() {
   const [searchParams] = useSearchParams()
@@ -64,6 +65,26 @@ export function OrderConfirmation() {
             <p className="mt-4 text-brand-foreground/80">
               Order <strong>{order.order_number}</strong> is confirmed. Paid in full.
             </p>
+            <p className="mt-1 text-sm text-brand-foreground/60">
+              {siteConfig.locationCity}
+            </p>
+            {order.order_type === 'pickup' && (
+              <div className="mt-4 flex items-start gap-2 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden />
+                <div>
+                  <p className="font-medium text-brand-foreground">Pickup location</p>
+                  <p className="mt-1 text-sm text-brand-foreground/90">
+                    {siteConfig.pickupAddress}
+                  </p>
+                  {order.pickup_date && (
+                    <p className="mt-2 text-sm text-brand-foreground/80">
+                      Your pickup: {new Date(order.pickup_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                      {order.pickup_time && ` at ${order.pickup_time}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="mt-6 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
               <h2 className="font-display text-lg font-semibold text-brand-foreground">Order summary</h2>
               <ul className="mt-3 space-y-2 text-sm text-brand-foreground/90">
