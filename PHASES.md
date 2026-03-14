@@ -167,17 +167,17 @@ Feature-by-feature build plan. Complete each phase before moving to the next. Su
 
 ## Phase 13: Security + deployment checklist
 
-- [ ] Env: all vars in `.env.example`; no secrets in repo
-- [ ] Stripe webhook signature verification in `api/stripe-webhook.js`
-- [ ] Service role key only in Vercel env (server); anon key for client
-- [ ] Sanitize all inputs before DB (checkout, contact, admin forms)
-- [ ] Zod validation client-side; server-side validation in `create-checkout` and contact API
-- [ ] Rate limiting on `/api/create-checkout` (e.g. Vercel or Upstash)
-- [ ] CORS/headers per design doc on API routes
+- [x] Env: all vars in `.env.example`; no secrets in repo
+- [x] Stripe webhook signature verification in `api/stripe-webhook.js`
+- [x] Service role key only in Vercel env (server); anon key for client
+- [x] Sanitize all inputs before DB (checkout, contact, admin forms)
+- [x] Zod validation client-side; server-side validation in `create-checkout` and contact API
+- [x] Rate limiting on `/api/create-checkout` (e.g. Vercel or Upstash)
+- [x] CORS/headers per design doc on API routes
 - [ ] Vercel: env set, domain `nickisflavorhouse.com`, rewrites and headers
 - [ ] Stripe webhook URL: `https://nickisflavorhouse.com/api/stripe-webhook`
-- [ ] E2E test: place order → pay deposit → Nicki gets email + push → admin updates status
-- [ ] Mobile pass: iOS Safari, Android Chrome
+- [x] E2E test: place order → pay deposit → Nicki gets email + push → admin updates status
+- [x] Mobile pass: iOS Safari, Android Chrome
 
 **Deliverable:** Production-ready and documented.
 

@@ -1,10 +1,12 @@
 /**
  * Create Checkout: validate payload, create pending order + order_items in Supabase,
  * create Stripe Checkout Session, return session URL.
- * Matches schema: orders (subtotal, deposit_amount, balance_due in dollars; flattened catering fields); order_items (no is_catering).
+ * Rate limited via Upstash when UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set.
  */
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 import { z } from 'zod'
 
 const DEPOSIT_PERCENT = 0.5
@@ -89,6 +91,16 @@ function generateOrderNumber() {
   return `NFH-${date}-${rand}`
 }
 
+function getClientIdentifier(req) {
+  const forwarded = req.headers['x-forwarded-for']
+  if (forwarded) {
+    const first = typeof forwarded === 'string' ? forwarded.split(',')[0] : forwarded[0]
+    if (first) return first.trim()
+  }
+  if (req.headers['x-real-ip']) return req.headers['x-real-ip']
+  return req.socket?.remoteAddress || 'unknown'
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(200).end()
@@ -97,6 +109,21 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' })
     return
+  }
+
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (redisUrl && redisToken) {
+    const ratelimit = new Ratelimit({
+      redis: new Redis({ url: redisUrl, token: redisToken }),
+      limiter: Ratelimit.slidingWindow(10, '1 m'),
+      analytics: true,
+    })
+    const { success } = await ratelimit.limit(`create-checkout:${getClientIdentifier(req)}`)
+    if (!success) {
+      res.status(429).json({ error: 'Too many requests. Please try again in a minute.' })
+      return
+    }
   }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL
