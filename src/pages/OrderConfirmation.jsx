@@ -9,23 +9,26 @@ import { Instagram, MapPin } from 'lucide-react'
 
 export function OrderConfirmation() {
   const [searchParams] = useSearchParams()
-  const sessionId = searchParams.get('session_id')
+  const rawSessionId = searchParams.get('session_id')
+  const sessionId = typeof rawSessionId === 'string' ? rawSessionId.trim() : ''
+  const validSessionId = sessionId && sessionId.startsWith('cs_') ? sessionId : null
   const clearCart = useCartStore((s) => s.clearCart)
   const [order, setOrder] = useState(null)
   const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(!!sessionId)
+  const [loading, setLoading] = useState(!!validSessionId)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (sessionId) clearCart()
-  }, [sessionId, clearCart])
+    if (validSessionId) clearCart()
+  }, [validSessionId, clearCart])
 
   useEffect(() => {
-    if (!sessionId) return
+    if (!validSessionId) return
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`/api/order-by-session?session_id=${encodeURIComponent(sessionId)}`)
+    const url = `${window.location.origin}/api/order-by-session?session_id=${encodeURIComponent(validSessionId)}`
+    fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
         return r.json()
@@ -43,7 +46,7 @@ export function OrderConfirmation() {
         if (!cancelled) setLoading(false)
       })
     return () => { cancelled = true }
-  }, [sessionId])
+  }, [validSessionId])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -55,6 +58,10 @@ export function OrderConfirmation() {
         {!sessionId ? (
           <p className="mt-4 text-brand-foreground/80">
             No order session found. If you just completed payment, give us a moment and refresh.
+          </p>
+        ) : !validSessionId ? (
+          <p className="mt-4 text-brand-foreground/80">
+            Invalid session link. Please use the link from your confirmation email or contact us.
           </p>
         ) : loading ? (
           <p className="mt-4 text-brand-foreground/80">Loading your order...</p>
