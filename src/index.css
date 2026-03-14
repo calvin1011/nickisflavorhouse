@@ -9,6 +9,11 @@
   --brand-muted: #a08060;
   --brand-background: #fdfbf7;
   --brand-foreground: #2c1810;
+  /* Behold.so Instagram feed section */
+  --color-cream: var(--brand-background);
+  --color-primary: var(--brand-primary);
+  --color-text-muted: var(--brand-muted);
+  --color-accent: var(--brand-accent);
 }
 
 html {

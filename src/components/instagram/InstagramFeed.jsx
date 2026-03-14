@@ -1,104 +1,59 @@
-import { useState, useEffect } from 'react'
-import { Instagram } from 'lucide-react'
-import { siteConfig } from '@/lib/siteConfig'
+import { useEffect } from 'react'
 
-export function InstagramFeed() {
-  const [media, setMedia] = useState([])
-  const [profileUrl, setProfileUrl] = useState(siteConfig.instagramUrl)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
+export default function InstagramFeed() {
   useEffect(() => {
-    let cancelled = false
-    async function fetchFeed() {
-      try {
-        const base = import.meta.env.VITE_APP_URL ?? ''
-        const res = await fetch(`${base}/api/instagram-feed`)
-        const data = await res.json()
-        if (cancelled) return
-        if (!res.ok) {
-          setError(data?.error ?? 'Failed to load')
-          setMedia([])
-          if (data.profileUrl) setProfileUrl(data.profileUrl)
-          return
-        }
-        setMedia(data.media ?? [])
-        if (data.profileUrl) setProfileUrl(data.profileUrl)
-      } catch (err) {
-        if (!cancelled) {
-          setError(err?.message ?? 'Failed to load')
-          setMedia([])
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+    if (document.querySelector('script[src="https://w.behold.so/widget.js"]')) return
+
+    const s = document.createElement('script')
+    s.type = 'module'
+    s.src = 'https://w.behold.so/widget.js'
+    document.head.appendChild(s)
+
+    return () => {
+      const existing = document.querySelector('script[src="https://w.behold.so/widget.js"]')
+      if (existing) existing.remove()
     }
-    fetchFeed()
-    return () => { cancelled = true }
   }, [])
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div
-            key={i}
-            className="aspect-square animate-pulse rounded-lg bg-brand-muted/20"
-            aria-hidden
-          />
-        ))}
-      </div>
-    )
-  }
-
-  if (error || media.length === 0) {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-brand-muted/30 bg-white/50 py-8">
-        <Instagram className="h-10 w-10 text-brand-muted/50" aria-hidden />
-        <p className="text-sm text-brand-foreground/70">
-          {error ?? 'No posts to show.'}
-        </p>
-        <a
-          href={profileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-brand-primary hover:underline"
-        >
-          <Instagram size={18} />
-          View on Instagram
-        </a>
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-        {media.slice(0, 6).map((post) => (
-          <a
-            key={post.id}
-            href={post.permalink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group block aspect-square overflow-hidden rounded-lg border border-brand-muted/30 bg-white shadow-sm transition-shadow hover:shadow-md"
-          >
-            <img
-              src={post.thumbnail_url || post.media_url}
-              alt={post.caption?.slice(0, 100) ?? 'Instagram post'}
-              className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            />
-          </a>
-        ))}
-      </div>
+    <section style={{
+      padding: '3rem 1rem',
+      textAlign: 'center',
+      backgroundColor: 'var(--color-cream)',
+    }}>
+      <h2 style={{
+        fontFamily: 'Playfair Display, serif',
+        color: 'var(--color-primary)',
+        fontSize: '2rem',
+        marginBottom: '0.5rem',
+      }}>
+        Follow the Flavor
+      </h2>
+      <p style={{
+        color: 'var(--color-text-muted)',
+        marginBottom: '1.5rem',
+        fontSize: '0.95rem',
+      }}>
+        @nickisflavorhouse
+      </p>
+
+      <behold-widget feed-id="5bZsbOWTaZSeac5bQuK5"></behold-widget>
+
       <a
-        href={profileUrl}
+        href="https://www.instagram.com/nickisflavorhouse"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-brand-primary hover:underline"
+        style={{
+          marginTop: '1.5rem',
+          display: 'inline-block',
+          color: 'var(--color-accent)',
+          fontWeight: '600',
+          textDecoration: 'none',
+          fontSize: '0.95rem',
+        }}
       >
-        <Instagram size={18} />
-        Follow on Instagram
+        View all on Instagram →
       </a>
-    </div>
+    </section>
   )
 }

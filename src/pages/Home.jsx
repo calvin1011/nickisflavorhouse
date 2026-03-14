@@ -4,7 +4,7 @@ import { Footer } from '@/components/layout/Footer'
 import { useAnnouncements } from '@/hooks/useAnnouncements'
 import { useFeaturedMenu } from '@/hooks/useFeaturedMenu'
 import { MenuGrid } from '@/components/menu/MenuGrid'
-import { InstagramFeed } from '@/components/instagram/InstagramFeed'
+import InstagramFeed from '@/components/instagram/InstagramFeed'
 import { siteConfig } from '@/lib/siteConfig'
 
 export function Home() {
@@ -109,17 +109,7 @@ export function Home() {
           )}
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-          <h2 className="font-display text-2xl font-semibold text-brand-foreground">
-            Instagram
-          </h2>
-          <p className="mt-2 text-brand-foreground/70">
-            Follow us for updates and more.
-          </p>
-          <div className="mt-6">
-            <InstagramFeed />
-          </div>
-        </section>
+        <InstagramFeed />
       </main>
       <Footer />
     </div>
