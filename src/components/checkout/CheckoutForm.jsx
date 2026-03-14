@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useCartStore, getCartSubtotal } from '@/store/cartStore'
 import { checkoutSchema } from '@/utils/validators'
+import { formatCurrency } from '@/utils/formatCurrency'
 import { DepositSummary } from './DepositSummary'
 import { CateringForm } from './CateringForm'
 import { PaymentButton } from './PaymentButton'
@@ -261,7 +262,7 @@ export function CheckoutForm() {
               <PaymentButton
                 className="mt-4 w-full rounded-md bg-brand-primary px-4 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
               >
-                Pay Deposit
+                Pay {subtotal != null && subtotal > 0 ? formatCurrency(subtotal) : 'full amount'}
               </PaymentButton>
             </div>
           </>

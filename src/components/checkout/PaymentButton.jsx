@@ -7,7 +7,7 @@ import { sanitizeOrder } from '@/lib/sanitize'
  * POSTs checkout payload to create-checkout API and redirects to Stripe.
  * Must be used inside FormProvider with checkoutSchema; validates form first.
  */
-export function PaymentButton({ children = 'Pay Deposit', disabled, className }) {
+export function PaymentButton({ children = 'Pay full amount', disabled, className }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [validationMessage, setValidationMessage] = useState(null)

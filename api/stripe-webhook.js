@@ -60,12 +60,14 @@ export default async function handler(req, res) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+  const now = new Date().toISOString()
   const { error } = await supabase
     .from('orders')
     .update({
       stripe_session_id: session.id,
-      payment_status: 'deposit_paid',
-      updated_at: new Date().toISOString(),
+      payment_status: 'paid',
+      deposit_paid_at: now,
+      updated_at: now,
     })
     .eq('id', orderId)
 

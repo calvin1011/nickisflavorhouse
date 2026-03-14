@@ -9,14 +9,9 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { z } from 'zod'
 
-const DEPOSIT_PERCENT = 0.5
-const MIN_DEPOSIT_DOLLARS = 20
-
-function calculateDeposit(subtotalDollars) {
-  if (typeof subtotalDollars !== 'number' || subtotalDollars <= 0) return 0
-  const byPercent = subtotalDollars * DEPOSIT_PERCENT
-  return Math.max(byPercent, MIN_DEPOSIT_DOLLARS)
-}
+/**
+ * Full payment upfront: charge entire order total. DB stores deposit_amount = subtotal, balance_due = 0 for history.
+ */
 
 function sanitizeString(str) {
   if (str == null || typeof str !== 'string') return ''
@@ -153,8 +148,8 @@ export default async function handler(req, res) {
 
   const data = sanitizeOrder(parsed.data)
   const subtotalDollars = data.subtotal
-  const depositDollars = calculateDeposit(subtotalDollars)
-  const balanceDueDollars = Math.max(0, subtotalDollars - depositDollars)
+  const depositDollars = subtotalDollars
+  const balanceDueDollars = 0
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const orderNumber = generateOrderNumber()
@@ -224,10 +219,10 @@ export default async function handler(req, res) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: "Deposit — Nicki's Flavor House",
-              description: `Order ${orderNumber} — 50% deposit (balance due at pickup)`,
+              name: "Order total — Nicki's Flavor House",
+              description: `Order ${orderNumber}`,
             },
-            unit_amount: Math.round(depositDollars * 100),
+            unit_amount: Math.round(subtotalDollars * 100),
           },
           quantity: 1,
         },

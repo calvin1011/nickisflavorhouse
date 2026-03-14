@@ -62,7 +62,7 @@ export function OrderConfirmation() {
         ) : order ? (
           <>
             <p className="mt-4 text-brand-foreground/80">
-              Your deposit has been paid. Order <strong>{order.order_number}</strong> is confirmed.
+              Order <strong>{order.order_number}</strong> is confirmed. Paid in full.
             </p>
             <div className="mt-6 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
               <h2 className="font-display text-lg font-semibold text-brand-foreground">Order summary</h2>
@@ -76,22 +76,15 @@ export function OrderConfirmation() {
               </ul>
               <dl className="mt-4 space-y-1 border-t border-brand-muted/30 pt-4 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-brand-foreground/80">Subtotal</dt>
+                  <dt className="text-brand-foreground/80">Order total</dt>
                   <dd>{formatCurrency(order.subtotal)}</dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-brand-foreground/80">Deposit paid</dt>
-                  <dd>{formatCurrency(order.deposit_amount)}</dd>
-                </div>
-                <div className="flex justify-between font-medium">
-                  <dt className="text-brand-foreground/80">Balance due at pickup</dt>
-                  <dd>{formatCurrency(order.balance_due)}</dd>
+                <div className="flex justify-between font-medium text-brand-foreground/80">
+                  <dt>Payment</dt>
+                  <dd>Paid in full</dd>
                 </div>
               </dl>
             </div>
-            <p className="mt-6 text-sm text-brand-foreground/80">
-              Pay the balance at pickup with <strong>Cash App</strong> or <strong>Zelle</strong>.
-            </p>
             <div className="mt-6">
               <a
                 href="https://instagram.com"

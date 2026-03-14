@@ -125,15 +125,6 @@ export function AdminAccount() {
           </button>
         </form>
       </section>
-
-      <section className="mt-10 max-w-md">
-        <h2 className="font-display text-lg font-semibold text-brand-foreground">
-          Instagram feed
-        </h2>
-        <p className="mt-1 text-sm text-brand-foreground/70">
-          The Instagram block on the home page is powered by Behold.so. It is already configured and updates automatically—no login or API tokens required.
-        </p>
-      </section>
     </div>
   )
 }
