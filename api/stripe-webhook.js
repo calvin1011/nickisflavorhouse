@@ -65,8 +65,7 @@ export default async function handler(req, res) {
     .from('orders')
     .update({
       stripe_session_id: session.id,
-      payment_status: 'paid',
-      deposit_paid_at: now,
+      payment_status: 'paid_in_full',
       updated_at: now,
     })
     .eq('id', orderId)
