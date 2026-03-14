@@ -30,11 +30,11 @@ Small phase doc for: full payment upfront, delete uploaded image, admin cashout.
 
 **Goal:** Admin can remove an image that was uploaded by mistake (menu items and announcements).
 
-- [ ] **Menu item (admin)**
+- [x] **Menu item (admin)**
   - In `MenuItemForm`: when editing an item that has `image_url`, show current image and a "Remove image" (or "Delete image") control. On confirm: set `image_url` to `null` in DB; optionally delete the object from Supabase Storage `menu-images/` using the path derived from the current URL to avoid orphaned files.
-- [ ] **Announcement (admin)**
+- [x] **Announcement (admin)**
   - In `AnnouncementForm`: same pattern—show current image, "Remove image" control, clear `image_url` in DB and optionally remove file from Storage bucket `announcement-images/`.
-- [ ] **Storage**
+- [x] **Storage**
   - If you delete from Storage: derive object path from stored `image_url` (e.g. path after bucket name) and call `supabase.storage.from(bucket).remove([path])`. Handle 404 if already deleted.
 
 **Deliverable:** Admin can remove/replace an image for a menu item or announcement; DB and optionally Storage stay in sync.
@@ -45,13 +45,13 @@ Small phase doc for: full payment upfront, delete uploaded image, admin cashout.
 
 **Goal:** From the admin account, view and cash out funds received from customers (Stripe balance → bank).
 
-- [ ] **Stripe**
+- [x] **Stripe**
   - Payouts are usually automatic (Stripe sends to your connected bank on a schedule). Option A: add an admin link that opens Stripe Dashboard → Payouts so you can see balance and payout history. Option B: use Stripe API (with secret key) to show balance and recent payouts in-app.
-- [ ] **Admin UI**
+- [x] **Admin UI**
   - New section or page under admin (e.g. "Payouts" or "Cashout" in sidebar). Content either:
     - **Link-only:** "View payouts and withdraw funds" → `https://dashboard.stripe.com/payouts` (open in new tab), or
     - **In-app:** Call Stripe API (Balance, Payouts list), show available balance and next payout date; link "Manage in Stripe Dashboard" for actual bank settings and withdrawals.
-- [ ] **Security**
+- [x] **Security**
   - Page restricted to admin-only (same auth as rest of `/admin/*`). No API keys in client; any balance/payout data must be fetched via your backend (e.g. Vercel serverless) using `STRIPE_SECRET_KEY`.
 
 **Deliverable:** Admin can open payouts/cashout (Dashboard link or in-app balance + link); funds can be withdrawn via Stripe as usual.
