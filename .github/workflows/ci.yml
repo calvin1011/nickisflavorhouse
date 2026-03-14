@@ -109,9 +109,10 @@ jobs:
 
       - name: Serve and run E2E
         run: |
-          npx serve@latest dist -l 4173 &
-          npx wait-on@latest http://localhost:4173 -t 60000
+          npx vite preview --port 4173 --strictPort &
+          sleep 3
+          npx wait-on@latest http://127.0.0.1:4173 -t 30000 --interval 1000
           npm run test:e2e
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:4173
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
           CI: true
