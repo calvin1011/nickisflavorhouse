@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,6 +6,7 @@ import { X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { sanitizeString } from '@/lib/sanitize'
 import { cn } from '@/lib/utils'
+import { getStoragePathFromPublicUrl } from '@/lib/storage'
 
 const BUCKET = 'announcement-images'
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
@@ -43,6 +44,16 @@ async function uploadImage(file) {
   return data.publicUrl
 }
 
+async function removeStorageObject(bucket, publicUrl) {
+  if (!supabase || !publicUrl) return
+  const path = getStoragePathFromPublicUrl(publicUrl, bucket)
+  if (!path) return
+  const { error } = await supabase.storage.from(bucket).remove([path])
+  if (error && error.message?.toLowerCase() !== 'object not found') {
+    console.warn('Storage remove failed:', error)
+  }
+}
+
 /**
  * @param {{
  *   open: boolean
@@ -73,9 +84,12 @@ export function AnnouncementForm({
   })
 
   const [imageError, setImageError] = useState(null)
+  const [removeImage, setRemoveImage] = useState(false)
+  const imageInputRef = useRef(null)
 
   useEffect(() => {
     if (!open) return
+    setRemoveImage(false)
     if (announcement) {
       reset({
         title: announcement.title ?? '',
@@ -112,7 +126,12 @@ export function AnnouncementForm({
     setImageError(err || null)
     if (file && err) return
     let imageUrl = announcement?.image_url ?? null
-    if (file) {
+    if (removeImage) {
+      imageUrl = null
+      if (announcement?.image_url) {
+        await removeStorageObject(BUCKET, announcement.image_url)
+      }
+    } else if (file) {
       try {
         imageUrl = await uploadImage(file)
       } catch (err) {
@@ -211,21 +230,41 @@ export function AnnouncementForm({
             <label htmlFor="announcement-image" className={labelClass}>
               Image
             </label>
-            {announcement?.image_url && (
-              <p className="mt-1 text-sm text-brand-foreground/70">
-                Current:{' '}
-                <a
-                  href={announcement.image_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-primary underline"
-                >
-                  View
-                </a>
-                . Upload a new file to replace.
-              </p>
+            {announcement?.image_url && !removeImage && (
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <img
+                  src={announcement.image_url}
+                  alt=""
+                  className="h-20 w-20 rounded border border-brand-muted/30 object-cover"
+                />
+                <div className="flex flex-col gap-1">
+                  <a
+                    href={announcement.image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-brand-primary underline"
+                  >
+                    View
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRemoveImage(true)
+                      setImageError(null)
+                      if (imageInputRef.current) imageInputRef.current.value = ''
+                    }}
+                    className="text-left text-sm font-medium text-red-600 hover:text-red-700"
+                  >
+                    Remove image
+                  </button>
+                </div>
+              </div>
+            )}
+            {announcement?.image_url && removeImage && (
+              <p className="mt-1 text-sm text-brand-foreground/70">Image will be removed when you save.</p>
             )}
             <input
+              ref={imageInputRef}
               id="announcement-image"
               type="file"
               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
@@ -233,6 +272,7 @@ export function AnnouncementForm({
               onChange={(e) => {
                 const err = validateImageFile(e.target.files?.[0])
                 setImageError(err || null)
+                if (e.target.files?.[0]) setRemoveImage(false)
               }}
             />
             {imageError && (
