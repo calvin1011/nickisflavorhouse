@@ -22,9 +22,26 @@ export default async function handler(req, res) {
   const destination = encodeURIComponent(customerAddress.trim())
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destination}&units=imperial&key=${key}`
 
-  const response = await fetch(url)
-  const data = await response.json()
-  const element = data.rows?.[0]?.elements?.[0]
+  const timeoutMs = 15000
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  let data
+  try {
+    const response = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
+    data = await response.json()
+  } catch (err) {
+    clearTimeout(timeoutId)
+    const isAbort = err?.name === 'AbortError' || err?.message === 'AbortError'
+    return res.status(502).json({
+      error: isAbort
+        ? 'Distance service timed out. Please try again.'
+        : 'Could not reach distance service. Please try again.',
+    })
+  }
+
+  const element = data?.rows?.[0]?.elements?.[0]
 
   if (!element || element.status !== 'OK') {
     return res.status(400).json({

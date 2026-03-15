@@ -18,4 +18,9 @@ alwaysApply: true
   - IDE/editor: `.idea/`, `.vscode/` (unless only shared config), `*.swp`
   - OS: `.DS_Store`, `Thumbs.db`
   - Logs and caches: `*.log`, `.cache/`, `.turbo/`
+  - SQL: `*.sql` (all SQL files, including migrations, are ignored in this project)
 - If you introduce a new tool or output directory that should not be tracked, add it to `.gitignore` in the same change.
+
+## SQL files
+
+- Treat all `*.sql` files as ignored. When creating or editing SQL (e.g. migrations), do not stage or commit them; they are listed in `.gitignore`.
