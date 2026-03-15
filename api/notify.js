@@ -262,3 +262,112 @@ export async function dispatchNotification(order) {
 
   return { email, push }
 }
+
+const CUSTOMER_STATUS_SUBJECTS = {
+  confirmed: "Your order is confirmed — Nicki's Flavor House",
+  ready: "Your order is ready for pickup — Nicki's Flavor House",
+}
+
+/**
+ * @param {object} order - Order with order_number, customer_name, pickup_date, pickup_time, order_type
+ * @param {'confirmed'|'ready'} status
+ * @returns {string} HTML email body
+ */
+function buildCustomerStatusEmailHtml(order, status) {
+  const orderNum = escapeHtml(String(order.order_number ?? ''))
+  const customerName = escapeHtml(String(order.customer_name ?? ''))
+  const pickupLine =
+    order.pickup_date && order.order_type === 'pickup'
+      ? `${escapeHtml(String(order.pickup_date))}${order.pickup_time ? ` at ${escapeHtml(String(order.pickup_time))}` : ''}`
+      : ''
+
+  const isReady = status === 'ready'
+  const headline = isReady ? 'Your order is ready for pickup' : 'Your order is confirmed'
+  const bodyCopy = isReady
+    ? `Order #${orderNum} is ready. Please come pick it up${pickupLine ? ` on ${pickupLine}` : ''}.`
+    : `We've confirmed order #${orderNum}.${pickupLine ? ` Pickup: ${pickupLine}.` : ''}`
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(headline)}</title>
+</head>
+<body style="margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background-color:#f5f5f5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:24px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+          <tr>
+            <td style="background:linear-gradient(135deg,#2d5016 0%,#3d6b1f 100%);padding:24px 28px;">
+              <h1 style="margin:0;font-size:22px;font-weight:600;color:#ffffff;letter-spacing:-0.02em;">${escapeHtml(headline)}</h1>
+              <p style="margin:8px 0 0;font-size:15px;color:rgba(255,255,255,0.9);">Order #${orderNum}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;line-height:1.5;">Hi ${customerName},</p>
+              <p style="margin:0 0 24px;font-size:16px;color:#1a1a1a;line-height:1.5;">${bodyCopy}</p>
+              <p style="margin:0;font-size:15px;color:#666;">Thank you for ordering from Nicki's Flavor House.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px;background-color:#f9f9f9;border-top:1px solid #eee;font-size:12px;color:#666;">
+              Nicki's Flavor House
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim()
+}
+
+/**
+ * Send status update email to the customer (confirmed or ready only).
+ * @param {object} order - Full order with customer_email, order_number, etc.
+ * @param {'confirmed'|'ready'} status
+ * @returns {Promise<{ ok: boolean, id?: string, error?: string }>}
+ */
+export async function sendCustomerStatusEmail(order, status) {
+  const apiKey = process.env.RESEND_API_KEY
+  const from = process.env.RESEND_FROM
+  const to = order.customer_email
+
+  if (!apiKey || !from) {
+    return { ok: false, error: 'Missing RESEND_API_KEY or RESEND_FROM' }
+  }
+  if (!to || typeof to !== 'string' || !to.includes('@')) {
+    return { ok: false, error: 'Invalid or missing customer email' }
+  }
+  if (status !== 'confirmed' && status !== 'ready') {
+    return { ok: false, error: 'Status must be confirmed or ready' }
+  }
+
+  const subject = CUSTOMER_STATUS_SUBJECTS[status]
+  const html = buildCustomerStatusEmailHtml(order, status)
+
+  const res = await fetch(RESEND_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      html,
+    }),
+  })
+
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    return { ok: false, error: data.message || data.error || res.statusText }
+  }
+  return { ok: true, id: data.id }
+}

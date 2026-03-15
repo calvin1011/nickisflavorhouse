@@ -45,6 +45,17 @@ export function AdminOrders() {
 
   const handleUpdateStatus = async (orderId, status) => {
     await updateOrderStatus(orderId, status)
+    if (status === 'confirmed' || status === 'ready') {
+      try {
+        await fetch('/api/notify-customer-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, status }),
+        })
+      } catch {
+        // Fire-and-forget; email failure does not affect status update
+      }
+    }
   }
 
   return (
