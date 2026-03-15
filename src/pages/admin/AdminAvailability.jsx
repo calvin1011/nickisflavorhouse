@@ -2,13 +2,16 @@ import { useState, useEffect } from 'react'
 import { useAvailability, timeToInputValue } from '@/hooks/useAvailability'
 
 export function AdminAvailability() {
-  const { slotsByDay, loading, error, updateDay } = useAvailability()
+  const { availability, slotsByDay, loading, error, updateDay } = useAvailability()
   const [saving, setSaving] = useState(null)
   const [local, setLocal] = useState({})
 
   useEffect(() => {
+    if (!availability || typeof availability !== 'object') return
     const next = {}
-    for (const slot of slotsByDay) {
+    for (let i = 0; i <= 6; i++) {
+      const slot = availability[i]
+      if (!slot) continue
       next[slot.day_of_week] = {
         is_available: slot.is_available ?? true,
         min_time: timeToInputValue(slot.min_time) || '',
@@ -16,7 +19,7 @@ export function AdminAvailability() {
       }
     }
     setLocal(next)
-  }, [slotsByDay])
+  }, [availability])
 
   const handleSubmit = async (e, dayOfWeek) => {
     e.preventDefault()

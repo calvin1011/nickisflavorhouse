@@ -237,16 +237,17 @@ export function AnnouncementForm({
             <label htmlFor="announcement-image" className={labelClass}>
               Image
             </label>
-            {announcement?.image_url && !removeImage && (
+            {(pendingImageUrl || (announcement?.image_url && !removeImage)) && (
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <img
-                  src={announcement.image_url}
+                  src={pendingImageUrl || announcement.image_url}
                   alt=""
                   className="h-20 w-20 rounded border border-brand-muted/30 object-cover"
+                  key={pendingImageUrl || announcement?.image_url}
                 />
                 <div className="flex flex-col gap-1">
                   <a
-                    href={announcement.image_url}
+                    href={pendingImageUrl || announcement.image_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-brand-primary underline"
@@ -257,6 +258,7 @@ export function AnnouncementForm({
                     type="button"
                     onClick={() => {
                       setRemoveImage(true)
+                      setPendingImageUrl(null)
                       setImageError(null)
                       if (imageInputRef.current) imageInputRef.current.value = ''
                     }}
@@ -264,11 +266,11 @@ export function AnnouncementForm({
                   >
                     Remove image
                   </button>
+                  {pendingImageUrl && (
+                    <span className="text-xs text-brand-foreground/70">New image (save to apply)</span>
+                  )}
                 </div>
               </div>
-            )}
-            {pendingImageUrl && (
-              <p className="mt-1 text-sm text-brand-foreground/70">New image ready (cropped). Save to use it.</p>
             )}
             {announcement?.image_url && removeImage && (
               <p className="mt-1 text-sm text-brand-foreground/70">Image will be removed when you save.</p>
