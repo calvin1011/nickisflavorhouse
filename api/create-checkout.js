@@ -10,7 +10,7 @@ import { Redis } from '@upstash/redis'
 import { z } from 'zod'
 
 /**
- * Full payment upfront: charge entire order total. DB stores deposit_amount = subtotal, balance_due = 0 for history.
+ * Stripe Checkout: full order total (subtotal + delivery fee if delivery). DB stores deposit_amount = 0, balance_due = 0.
  */
 
 function sanitizeString(str) {
@@ -47,11 +47,15 @@ const checkoutPayloadSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email(),
   phone: z.string().min(10).max(20),
-  order_type: z.enum(['pickup', 'catering']),
+  order_type: z.enum(['pickup', 'delivery', 'catering']),
   pickup_date: dateString.optional(),
   pickup_time: timeString.optional(),
   notes: z.string().max(2000).optional().default(''),
   catering: cateringSchema.optional(),
+  delivery_address: z.string().max(500).optional(),
+  delivery_fee: z.number().min(0).optional(),
+  delivery_distance_miles: z.number().min(0).optional(),
+  payment_method: z.literal('stripe').optional(),
   items: z.array(z.object({
     id: z.string().uuid(),
     name: z.string().min(1).max(500),
@@ -196,8 +200,8 @@ export default async function handler(req, res) {
     }
   }
   const subtotalDollars = data.subtotal
-  const depositDollars = subtotalDollars
-  const balanceDueDollars = 0
+  const deliveryFeeDollars = (data.order_type === 'delivery' && typeof data.delivery_fee === 'number') ? data.delivery_fee : 0
+  const orderTotalDollars = subtotalDollars + deliveryFeeDollars
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const orderNumber = generateOrderNumber()
@@ -211,9 +215,13 @@ export default async function handler(req, res) {
     order_type: data.order_type,
     status: 'pending',
     payment_status: 'pending',
+    payment_method: 'stripe',
     subtotal: subtotalDollars,
-    deposit_amount: depositDollars,
-    balance_due: balanceDueDollars,
+    deposit_amount: 0,
+    balance_due: 0,
+    delivery_address: data.order_type === 'delivery' ? (data.delivery_address || null) : null,
+    delivery_fee: deliveryFeeDollars,
+    delivery_distance_miles: data.order_type === 'delivery' && typeof data.delivery_distance_miles === 'number' ? data.delivery_distance_miles : null,
     notes: data.notes || null,
     pickup_date: data.pickup_date || null,
     pickup_time: data.pickup_time || null,
@@ -257,24 +265,36 @@ export default async function handler(req, res) {
   const successUrl = `${appUrl.replace(/\/$/, '')}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`
   const cancelUrl = `${appUrl.replace(/\/$/, '')}/checkout`
 
+  const lineItems = [
+    {
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: "Order — Nicki's Flavor House",
+          description: `Order ${orderNumber}`,
+        },
+        unit_amount: Math.round(subtotalDollars * 100),
+      },
+      quantity: 1,
+    },
+  ]
+  if (deliveryFeeDollars > 0) {
+    lineItems.push({
+      price_data: {
+        currency: 'usd',
+        product_data: { name: 'Delivery Fee' },
+        unit_amount: Math.round(deliveryFeeDollars * 100),
+      },
+      quantity: 1,
+    })
+  }
+
   let session
   try {
     session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: "Order total — Nicki's Flavor House",
-              description: `Order ${orderNumber}`,
-            },
-            unit_amount: Math.round(subtotalDollars * 100),
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {

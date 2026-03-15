@@ -377,3 +377,32 @@ export async function sendCustomerStatusEmail(order, status, options = {}) {
   }
   return { ok: true, id: data.id }
 }
+
+/**
+ * POST /api/notify — notify Nicki of a new order (e.g. pay-at-pickup).
+ * Body: { order } — order must include items for email.
+ */
+export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' })
+    return
+  }
+  let body
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  } catch {
+    res.status(400).json({ error: 'Invalid JSON' })
+    return
+  }
+  const order = body?.order
+  if (!order || typeof order !== 'object') {
+    res.status(400).json({ error: 'order required' })
+    return
+  }
+  await dispatchNotification(order)
+  res.status(200).json({ ok: true })
+}

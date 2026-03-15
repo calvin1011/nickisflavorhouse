@@ -28,7 +28,7 @@ export function AdminDashboard() {
     (o) => (o.status ?? 'pending') === 'pending'
   ).length
   const totalRevenue = orders.reduce(
-    (sum, o) => sum + (Number(o.deposit_amount) || 0),
+    (sum, o) => sum + (Number(o.subtotal) || 0) + (Number(o.delivery_fee) || 0),
     0
   )
   const recentOrders = orders.slice(0, 10)

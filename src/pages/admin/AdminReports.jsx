@@ -25,7 +25,7 @@ function toDateKey(iso) {
 }
 
 const ORDER_COLUMNS =
-  'id, order_number, customer_name, order_type, status, subtotal, deposit_amount, balance_due, created_at'
+  'id, order_number, customer_name, order_type, status, subtotal, delivery_fee, created_at'
 
 export function AdminReports() {
   const [startDate, setStartDate] = useState(() => {
@@ -104,7 +104,7 @@ export function AdminReports() {
   }, [fetchReportData])
 
   const totalRevenue = orders.reduce(
-    (sum, o) => sum + (Number(o.deposit_amount) || 0),
+    (sum, o) => sum + (Number(o.subtotal) || 0) + (Number(o.delivery_fee) || 0),
     0
   )
   const ordersByType = orders.reduce(
@@ -120,7 +120,7 @@ export function AdminReports() {
     for (const o of orders) {
       const key = (o.created_at || '').slice(0, 10)
       if (!key) continue
-      byDate[key] = (byDate[key] ?? 0) + (Number(o.deposit_amount) || 0)
+      byDate[key] = (byDate[key] ?? 0) + (Number(o.subtotal) || 0) + (Number(o.delivery_fee) || 0)
     }
     return Object.entries(byDate)
       .map(([date, revenue]) => ({ date: toDateKey(date), revenue }))

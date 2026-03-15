@@ -31,7 +31,7 @@ export default async function handler(req, res) {
 
   const { data: order, error: orderError } = await supabase
     .from('orders')
-    .select('id, order_number, customer_name, customer_email, subtotal, deposit_amount, balance_due, order_type, pickup_date, pickup_time')
+    .select('id, order_number, customer_name, customer_email, subtotal, order_type, pickup_date, pickup_time, payment_method, delivery_fee')
     .eq('stripe_session_id', sessionId)
     .single()
 
@@ -50,12 +50,13 @@ export default async function handler(req, res) {
     return
   }
 
+  const deliveryFee = Number(order.delivery_fee) || 0
   res.status(200).json({
     order: {
       ...order,
       subtotal: Number(order.subtotal),
-      deposit_amount: Number(order.deposit_amount),
-      balance_due: Number(order.balance_due),
+      delivery_fee: deliveryFee,
+      total: Number(order.subtotal) + deliveryFee,
     },
     items: (items || []).map((i) => ({
       name: i.name,
