@@ -270,11 +270,24 @@ export function CheckoutForm() {
 
     const orderForNotify = { ...order, items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })) }
     try {
-      await fetch(`${window.location.origin}/api/notify`, {
+      const tokenRes = await fetch(`${window.location.origin}/api/notify-token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order: orderForNotify }),
+        body: JSON.stringify({ orderId: order.id }),
       })
+      const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null
+      if (tokenData?.token && tokenData?.createdAt) {
+        await fetch(`${window.location.origin}/api/notify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            order: orderForNotify,
+            orderId: order.id,
+            createdAt: tokenData.createdAt,
+            token: tokenData.token,
+          }),
+        })
+      }
     } catch {
       // non-blocking
     }

@@ -1,7 +1,9 @@
 /**
  * Notifications: email via Resend, push via ntfy.sh.
  * dispatchNotification(order) runs both in parallel; uses Promise.allSettled so one failure doesn't block the other.
+ * POST /api/notify requires a signed token from POST /api/notify-token (orderId + createdAt).
  */
+import crypto from 'crypto'
 
 const RESEND_URL = 'https://api.resend.com/emails'
 const NTFY_URL = 'https://ntfy.sh'
@@ -378,9 +380,31 @@ export async function sendCustomerStatusEmail(order, status, options = {}) {
   return { ok: true, id: data.id }
 }
 
+function getClientIdentifier(req) {
+  const forwarded = req.headers['x-forwarded-for']
+  if (forwarded) {
+    const first = typeof forwarded === 'string' ? forwarded.split(',')[0] : forwarded[0]
+    if (first) return first.trim()
+  }
+  if (req.headers['x-real-ip']) return req.headers['x-real-ip']
+  return req.socket?.remoteAddress || 'unknown'
+}
+
+function verifyNotifyToken(orderId, createdAt, token) {
+  const secret = process.env.NOTIFY_SECRET
+  if (!secret || !token || typeof orderId !== 'string' || !createdAt) return false
+  const expected = crypto.createHmac('sha256', secret).update(`${orderId}:${createdAt}`).digest('hex')
+  if (token.length !== expected.length) return false
+  try {
+    return crypto.timingSafeEqual(Buffer.from(token, 'hex'), Buffer.from(expected, 'hex'))
+  } catch {
+    return false
+  }
+}
+
 /**
  * POST /api/notify — notify Nicki of a new order (e.g. pay-at-pickup).
- * Body: { order } — order must include items for email.
+ * Body: { order, orderId, createdAt, token } — token from POST /api/notify-token. Order must include items for email.
  */
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -391,6 +415,30 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
+
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (redisUrl && redisToken) {
+    const { Ratelimit } = await import('@upstash/ratelimit')
+    const { Redis } = await import('@upstash/redis')
+    const ratelimit = new Ratelimit({
+      redis: new Redis({ url: redisUrl, token: redisToken }),
+      limiter: Ratelimit.slidingWindow(20, '1 m'),
+      analytics: true,
+    })
+    const { success } = await ratelimit.limit(`notify:${getClientIdentifier(req)}`)
+    if (!success) {
+      res.status(429).json({ error: 'Too many requests. Please try again in a minute.' })
+      return
+    }
+  }
+
+  if (!process.env.NOTIFY_SECRET) {
+    console.error('Missing NOTIFY_SECRET')
+    res.status(500).json({ error: 'Server configuration error' })
+    return
+  }
+
   let body
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
@@ -399,8 +447,19 @@ export default async function handler(req, res) {
     return
   }
   const order = body?.order
+  const orderId = body?.orderId
+  const createdAt = body?.createdAt
+  const token = body?.token
   if (!order || typeof order !== 'object') {
     res.status(400).json({ error: 'order required' })
+    return
+  }
+  if (!orderId || !createdAt || !token) {
+    res.status(401).json({ error: 'orderId, createdAt, and token are required. Get a token from /api/notify-token first.' })
+    return
+  }
+  if (!verifyNotifyToken(orderId, createdAt, token)) {
+    res.status(401).json({ error: 'Invalid or expired token.' })
     return
   }
   await dispatchNotification(order)
