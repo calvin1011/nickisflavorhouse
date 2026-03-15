@@ -19,7 +19,7 @@ export default function PaymentLinks({ paymentMethod, subtotal }) {
           marginBottom: '0.4rem',
         }}
       >
-        You're almost done!
+        You&apos;re almost done!
       </h3>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>
         Please pay <strong>${Number(subtotal).toFixed(2)}</strong> at pickup using the method you selected

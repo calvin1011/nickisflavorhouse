@@ -201,7 +201,6 @@ export default async function handler(req, res) {
   }
   const subtotalDollars = data.subtotal
   const deliveryFeeDollars = (data.order_type === 'delivery' && typeof data.delivery_fee === 'number') ? data.delivery_fee : 0
-  const orderTotalDollars = subtotalDollars + deliveryFeeDollars
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const orderNumber = generateOrderNumber()

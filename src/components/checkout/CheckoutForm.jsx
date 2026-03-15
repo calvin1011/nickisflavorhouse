@@ -212,7 +212,6 @@ export function CheckoutForm() {
     }
 
     const orderNumber = `NFH-${Date.now().toString().slice(-6)}`
-    const cartTotal = orderType === 'delivery' && deliveryFee != null ? subtotal + deliveryFee : subtotal
     const orderRecord = {
       order_number: orderNumber,
       customer_name: sanitizeString(form.name),
