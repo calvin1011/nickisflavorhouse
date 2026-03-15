@@ -363,19 +363,21 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
             <label htmlFor="menu-item-image" className={labelClass}>
               Image
             </label>
-            {item?.image_url && !removeImage && (
+            {(pendingImageUrl || (item?.image_url && !removeImage)) && (
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <img
-                  src={item.image_url}
+                  src={pendingImageUrl || item.image_url}
                   alt=""
                   className="h-20 w-20 rounded border border-brand-muted/30 object-cover"
+                  key={pendingImageUrl || item?.image_url}
                 />
                 <div className="flex flex-col gap-1">
-                  <a href={item.image_url} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-primary underline">View</a>
+                  <a href={pendingImageUrl || item.image_url} target="_blank" rel="noopener noreferrer" className="text-sm text-brand-primary underline">View</a>
                   <button
                     type="button"
                     onClick={() => {
                       setRemoveImage(true)
+                      setPendingImageUrl(null)
                       setImageError(null)
                       if (imageInputRef.current) imageInputRef.current.value = ''
                     }}
@@ -383,11 +385,11 @@ export function MenuItemForm({ open, onClose, onSuccess, item, categories }) {
                   >
                     Remove image
                   </button>
+                  {pendingImageUrl && (
+                    <span className="text-xs text-brand-foreground/70">New image (save to apply)</span>
+                  )}
                 </div>
               </div>
-            )}
-            {pendingImageUrl && (
-              <p className="mt-1 text-sm text-brand-foreground/70">New image ready (cropped). Save to use it.</p>
             )}
             {item?.image_url && removeImage && (
               <p className="mt-1 text-sm text-brand-foreground/70">Image will be removed when you save.</p>
