@@ -1,3 +1,4 @@
+/* global Image */
 /**
  * Draw cropped region of image to canvas and return as blob.
  * crop is in display pixels (from ReactCrop onComplete); we scale to natural size.
