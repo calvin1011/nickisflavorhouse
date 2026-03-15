@@ -26,12 +26,12 @@ export const checkoutSchema = z.object({
   catering: cateringSchema.optional(),
 }).refine(
   (data) => {
-    if (data.order_type === 'pickup') {
+    if (data.order_type === 'pickup' || data.order_type === 'delivery') {
       return !!data.pickup_date && !!data.pickup_time
     }
     return true
   },
-  { message: 'Pickup date and time are required for pickup orders', path: ['pickup_date'] }
+  { message: 'Date and time are required', path: ['pickup_date'] }
 ).refine(
   (data) => {
     if (data.order_type === 'catering') {
