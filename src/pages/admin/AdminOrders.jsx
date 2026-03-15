@@ -52,7 +52,7 @@ export function AdminOrders() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ orderId, status }),
         })
-      } catch (_) {
+      } catch {
         // Fire-and-forget; email failure does not affect status update
       }
     }
