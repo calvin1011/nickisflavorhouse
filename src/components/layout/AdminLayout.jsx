@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, UtensilsCrossed, ClipboardList, Megaphone, BarChart3, Wallet, UserCircle, LogOut } from 'lucide-react'
+import { LayoutDashboard, UtensilsCrossed, ClipboardList, Megaphone, BarChart3, Clock, Wallet, UserCircle, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/admin/menu', label: 'Menu', icon: UtensilsCrossed },
   { to: '/admin/orders', label: 'Orders', icon: ClipboardList },
   { to: '/admin/announcements', label: 'Announcements', icon: Megaphone },
+  { to: '/admin/availability', label: 'Availability', icon: Clock },
   { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
   { to: '/admin/payouts', label: 'Payouts', icon: Wallet },
   { to: '/admin/account', label: 'Account', icon: UserCircle },

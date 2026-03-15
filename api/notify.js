@@ -271,9 +271,10 @@ const CUSTOMER_STATUS_SUBJECTS = {
 /**
  * @param {object} order - Order with order_number, customer_name, pickup_date, pickup_time, order_type
  * @param {'confirmed'|'ready'} status
+ * @param {{ pickupAddress?: string }} [options] - Pickup address for "ready" emails
  * @returns {string} HTML email body
  */
-function buildCustomerStatusEmailHtml(order, status) {
+function buildCustomerStatusEmailHtml(order, status, options = {}) {
   const orderNum = escapeHtml(String(order.order_number ?? ''))
   const customerName = escapeHtml(String(order.customer_name ?? ''))
   const pickupLine =
@@ -286,6 +287,7 @@ function buildCustomerStatusEmailHtml(order, status) {
   const bodyCopy = isReady
     ? `Order #${orderNum} is ready. Please come pick it up${pickupLine ? ` on ${pickupLine}` : ''}.`
     : `We've confirmed order #${orderNum}.${pickupLine ? ` Pickup: ${pickupLine}.` : ''}`
+  const pickupAddress = options.pickupAddress ? escapeHtml(String(options.pickupAddress)) : ''
 
   return `
 <!DOCTYPE html>
@@ -310,6 +312,9 @@ function buildCustomerStatusEmailHtml(order, status) {
             <td style="padding:28px;">
               <p style="margin:0 0 16px;font-size:16px;color:#1a1a1a;line-height:1.5;">Hi ${customerName},</p>
               <p style="margin:0 0 24px;font-size:16px;color:#1a1a1a;line-height:1.5;">${bodyCopy}</p>
+              ${isReady && pickupAddress ? `
+              <p style="margin:0 0 16px;font-size:15px;color:#1a1a1a;line-height:1.5;"><strong>Pickup address:</strong><br>${pickupAddress}</p>
+              ` : ''}
               <p style="margin:0;font-size:15px;color:#666;">Thank you for ordering from Nicki's Flavor House.</p>
             </td>
           </tr>
@@ -331,9 +336,10 @@ function buildCustomerStatusEmailHtml(order, status) {
  * Send status update email to the customer (confirmed or ready only).
  * @param {object} order - Full order with customer_email, order_number, etc.
  * @param {'confirmed'|'ready'} status
+ * @param {{ pickupAddress?: string }} [options] - Pickup address for "ready" emails (from PICKUP_ADDRESS env)
  * @returns {Promise<{ ok: boolean, id?: string, error?: string }>}
  */
-export async function sendCustomerStatusEmail(order, status) {
+export async function sendCustomerStatusEmail(order, status, options = {}) {
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.RESEND_FROM
   const to = order.customer_email
@@ -349,7 +355,7 @@ export async function sendCustomerStatusEmail(order, status) {
   }
 
   const subject = CUSTOMER_STATUS_SUBJECTS[status]
-  const html = buildCustomerStatusEmailHtml(order, status)
+  const html = buildCustomerStatusEmailHtml(order, status, options)
 
   const res = await fetch(RESEND_URL, {
     method: 'POST',

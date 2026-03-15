@@ -96,6 +96,25 @@ function getClientIdentifier(req) {
   return req.socket?.remoteAddress || 'unknown'
 }
 
+function isWeekend(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false
+  const day = new Date(dateStr + 'T12:00:00').getDay()
+  return day === 0 || day === 6
+}
+
+function timeToComparable(t) {
+  if (!t || typeof t !== 'string') return ''
+  return String(t).slice(0, 5)
+}
+
+function isTimeInRange(timeStr, minTime, maxTime) {
+  const t = timeToComparable(timeStr)
+  const min = timeToComparable(minTime)
+  const max = timeToComparable(maxTime)
+  if (!t || !min || !max) return true
+  return t >= min && t <= max
+}
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(200).end()
@@ -147,6 +166,24 @@ export default async function handler(req, res) {
   }
 
   const data = sanitizeOrder(parsed.data)
+
+  if (data.order_type === 'pickup' && data.pickup_date && data.pickup_time) {
+    const supabaseForAvailability = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: availabilityRows } = await supabaseForAvailability
+      .from('pickup_availability')
+      .select('day_type, min_time, max_time')
+    const byDay = {}
+    for (const row of availabilityRows ?? []) {
+      byDay[row.day_type] = { min_time: row.min_time, max_time: row.max_time }
+    }
+    const slot = isWeekend(data.pickup_date) ? byDay.weekend : byDay.weekday
+    if (slot && !isTimeInRange(data.pickup_time, slot.min_time, slot.max_time)) {
+      res.status(400).json({
+        error: 'Pickup time is outside available hours. Please choose a time within the displayed availability.',
+      })
+      return
+    }
+  }
   const subtotalDollars = data.subtotal
   const depositDollars = subtotalDollars
   const balanceDueDollars = 0
