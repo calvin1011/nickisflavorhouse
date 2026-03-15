@@ -27,6 +27,7 @@ export default [
       sourceType: 'module',
       parserOptions: { ecmaFeatures: { jsx: true } },
       globals: {
+        AbortController: 'readonly',
         window: 'readonly',
         document: 'readonly',
         fetch: 'readonly',
