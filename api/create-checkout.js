@@ -66,10 +66,10 @@ const checkoutPayloadSchema = z.object({
   subtotal: z.number().min(0),
 }).refine(
   (data) => {
-    if (data.order_type === 'pickup') return !!data.pickup_date && !!data.pickup_time
+    if (data.order_type === 'pickup' || data.order_type === 'delivery') return !!data.pickup_date && !!data.pickup_time
     return true
   },
-  { message: 'Pickup date and time required', path: ['pickup_date'] }
+  { message: 'Date and time required', path: ['pickup_date'] }
 ).refine(
   (data) => {
     if (data.order_type === 'catering') return !!data.catering
@@ -170,10 +170,11 @@ export default async function handler(req, res) {
 
   const data = sanitizeOrder(parsed.data)
 
-  if (data.order_type === 'pickup' && data.pickup_date && data.pickup_time) {
+  const needsDateTime = (data.order_type === 'pickup' || data.order_type === 'delivery') && data.pickup_date && data.pickup_time
+  if (needsDateTime) {
     const dayOfWeek = getDayOfWeek(data.pickup_date)
     if (dayOfWeek === null) {
-      res.status(400).json({ error: 'Invalid pickup date.' })
+      res.status(400).json({ error: 'Invalid date.' })
       return
     }
     const supabaseForAvailability = createClient(supabaseUrl, supabaseServiceKey)
@@ -187,14 +188,15 @@ export default async function handler(req, res) {
       return
     }
     if (!row.is_available) {
+      const typeLabel = data.order_type === 'delivery' ? 'Delivery' : 'Pickup'
       res.status(400).json({
-        error: 'Pickup is not available on the selected day. Please choose another date.',
+        error: `${typeLabel} is not available on the selected day. Please choose another date.`,
       })
       return
     }
     if (!isTimeInRange(data.pickup_time, row.min_time, row.max_time)) {
       res.status(400).json({
-        error: 'Pickup time is outside available hours. Please choose a time within the displayed availability.',
+        error: 'Time is outside available hours. Please choose a time within the displayed availability.',
       })
       return
     }

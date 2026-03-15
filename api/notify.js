@@ -1,12 +1,13 @@
 /**
- * Notifications: email via Resend, push via ntfy.sh.
- * dispatchNotification(order) runs both in parallel; uses Promise.allSettled so one failure doesn't block the other.
+ * Notifications: email via Resend, push via ntfy (https://ntfy.sh or self-hosted).
+ * dispatchNotification(order) runs both in parallel; use Promise.allSettled so one failure doesn't block the other.
  * POST /api/notify requires a signed token from POST /api/notify-token (orderId + createdAt).
+ * To receive push: subscribe to NTFY_TOPIC via ntfy app, web (ntfy.sh/<topic>), or API (docs.ntfy.sh/subscribe/api).
  */
 import crypto from 'crypto'
 
 const RESEND_URL = 'https://api.resend.com/emails'
-const NTFY_URL = 'https://ntfy.sh'
+const NTFY_DEFAULT_BASE = 'https://ntfy.sh'
 
 function escapeHtml(s) {
   if (typeof s !== 'string') return ''
@@ -215,6 +216,9 @@ export async function sendEmailNotification(order) {
 }
 
 /**
+ * Publish a push notification to ntfy (public ntfy.sh or NTFY_BASE_URL for self-hosted).
+ * Subscribe to the topic via app, web, or API: https://docs.ntfy.sh/subscribe/api/
+ *
  * @param {object} order - Order with order_number, customer_name, subtotal
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
@@ -224,18 +228,26 @@ export async function sendPushNotification(order) {
     return { ok: false, error: 'Missing NTFY_TOPIC' }
   }
 
+  const base = (process.env.NTFY_BASE_URL || NTFY_DEFAULT_BASE).replace(/\/$/, '')
   const title = `Order ${order.order_number}`
   const message = [
     `${order.customer_name}`,
     `Paid in full — $${Number(order.subtotal).toFixed(2)}`,
   ].join(' — ')
 
-  const res = await fetch(`${NTFY_URL}/${topic}`, {
+  const headers = {
+    Title: title,
+    Priority: 'default',
+    Tags: 'shopping_cart',
+  }
+  const appUrl = process.env.VITE_APP_URL || process.env.APP_URL
+  if (appUrl) {
+    headers.Click = `${appUrl.replace(/\/$/, '')}/admin/orders`
+  }
+
+  const res = await fetch(`${base}/${topic}`, {
     method: 'POST',
-    headers: {
-      Title: title,
-      Priority: 'default',
-    },
+    headers,
     body: message,
   })
 

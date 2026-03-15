@@ -1,9 +1,9 @@
 import { useAvailability, formatPickupHoursSummary } from '@/hooks/useAvailability'
 
 /**
- * Shows Nicki's chosen pickup hours so customers see availability before picking a date/time.
+ * Shows Nicki's availability so customers see when they can pick up or receive delivery.
  */
-export function PickupHoursSummary() {
+export function PickupHoursSummary({ orderType = 'pickup' } = {}) {
   const { byDay, loading, error } = useAvailability()
 
   if (loading || error || !byDay) return null
@@ -11,12 +11,17 @@ export function PickupHoursSummary() {
   const rows = formatPickupHoursSummary(byDay)
   if (!rows.length) return null
 
+  const isDelivery = orderType === 'delivery'
+  const heading = isDelivery
+    ? 'Availability (choose a date and time for delivery within these windows)'
+    : 'Pickup hours (choose a date and time within these windows)'
+
   return (
     <div className="rounded-lg border border-brand-muted/30 bg-brand-muted/10 p-4">
       <p className="mb-2 text-sm font-medium text-brand-foreground">
-        Pickup hours (choose a date and time within these windows)
+        {heading}
       </p>
-      <ul className="text-sm text-brand-foreground/90" aria-label="Pickup availability by day">
+      <ul className="text-sm text-brand-foreground/90" aria-label={isDelivery ? 'Delivery availability by day' : 'Pickup availability by day'}>
         {rows.map(({ day, text }) => (
           <li key={day} className="flex justify-between gap-4 py-0.5">
             <span className="font-medium">{day}</span>

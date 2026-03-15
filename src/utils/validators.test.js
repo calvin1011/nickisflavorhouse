@@ -26,6 +26,30 @@ describe('checkoutSchema', () => {
     ).toThrow()
   })
 
+  const validDelivery = {
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    phone: '5551234567',
+    order_type: 'delivery',
+    pickup_date: '2025-04-01',
+    pickup_time: '14:00',
+    notes: '',
+  }
+
+  it('accepts valid delivery order with date and time', () => {
+    expect(checkoutSchema.parse(validDelivery)).toEqual(validDelivery)
+  })
+
+  it('rejects delivery without date and time', () => {
+    expect(() =>
+      checkoutSchema.parse({
+        ...validDelivery,
+        pickup_date: '',
+        pickup_time: '',
+      })
+    ).toThrow()
+  })
+
   it('rejects invalid email', () => {
     expect(() =>
       checkoutSchema.parse({ ...validPickup, email: 'not-an-email' })

@@ -86,6 +86,7 @@ export function CheckoutForm() {
 
   const orderType = methods.watch('order_type')
   const pickupDate = methods.watch('pickup_date')
+  const pickupTime = methods.watch('pickup_time')
   const showCatering = orderType === 'catering' || hasCatering
   const pickupSlots = getAvailabilityForDate(pickupDate, byDay)
   const pickupNotAvailable = pickupSlots?.notAvailable === true
@@ -107,7 +108,7 @@ export function CheckoutForm() {
   }, [showCatering, methods])
 
   useEffect(() => {
-    if (orderType === 'pickup' && pickupNotAvailable && methods.getValues('pickup_time')) {
+    if ((orderType === 'pickup' || orderType === 'delivery') && pickupNotAvailable && methods.getValues('pickup_time')) {
       methods.setValue('pickup_time', '')
     }
   }, [orderType, pickupNotAvailable, methods])
@@ -155,6 +156,10 @@ export function CheckoutForm() {
       }
       if (deliveryFee == null || deliveryError) {
         setSubmitError('Please wait for delivery fee to be calculated or fix the address')
+        return
+      }
+      if (!data.pickup_date || !data.pickup_time) {
+        setSubmitError('Please select delivery date and time')
         return
       }
     }
@@ -225,8 +230,8 @@ export function CheckoutForm() {
       payment_method: paymentMethod,
       status: 'pending',
       notes: sanitizeString(form.notes),
-      pickup_date: data.order_type === 'pickup' ? data.pickup_date || null : null,
-      pickup_time: data.order_type === 'pickup' ? data.pickup_time || null : null,
+      pickup_date: (data.order_type === 'pickup' || data.order_type === 'delivery') ? data.pickup_date || null : null,
+      pickup_time: (data.order_type === 'pickup' || data.order_type === 'delivery') ? data.pickup_time || null : null,
       delivery_address: orderType === 'delivery' ? sanitizeString(deliveryAddress) : null,
       delivery_fee: orderType === 'delivery' ? deliveryFee : 0,
       delivery_distance_miles: orderType === 'delivery' && deliveryDistance != null ? parseFloat(deliveryDistance) : null,
@@ -500,13 +505,13 @@ export function CheckoutForm() {
                 </div>
               )}
 
-              {orderType === 'pickup' && (
+              {(orderType === 'pickup' || orderType === 'delivery') && (
                 <div className="space-y-4">
-                  <PickupHoursSummary />
+                  <PickupHoursSummary orderType={orderType} />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label htmlFor="pickup_date" className={labelClass}>
-                        Pickup date
+                        {orderType === 'delivery' ? 'Delivery date' : 'Pickup date'}
                       </label>
                       <input
                         id="pickup_date"
@@ -517,7 +522,9 @@ export function CheckoutForm() {
                       />
                       {pickupNotAvailable && (
                         <p className="mt-1 text-sm text-amber-700" role="alert">
-                          Pickup is not available on {pickupSlots?.dayName}. Please choose another date.
+                          {orderType === 'delivery'
+                            ? `Delivery is not available on ${pickupSlots?.dayName}. Please choose another date.`
+                            : `Pickup is not available on ${pickupSlots?.dayName}. Please choose another date.`}
                         </p>
                       )}
                       {methods.formState.errors.pickup_date && (
@@ -528,7 +535,7 @@ export function CheckoutForm() {
                     </div>
                     <div>
                       <label htmlFor="pickup_time" className={labelClass}>
-                        Pickup time
+                        {orderType === 'delivery' ? 'Delivery time' : 'Pickup time'}
                       </label>
                       <input
                         id="pickup_time"
@@ -652,7 +659,7 @@ export function CheckoutForm() {
               />
               <button
                 type="submit"
-                disabled={submitLoading || (orderType === 'delivery' && (deliveryFee == null || !!deliveryError))}
+                disabled={submitLoading || (orderType === 'delivery' && (deliveryFee == null || !!deliveryError || !pickupDate || !pickupTime))}
                 className="mt-4 w-full rounded-md bg-brand-primary px-4 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
               >
                 {submitLoading ? 'Processing…' : `Place order — ${formatCurrency(orderTotal)}`}
