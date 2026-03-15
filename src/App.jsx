@@ -10,6 +10,7 @@ import { AdminMenu } from '@/pages/admin/AdminMenu'
 import { AdminOrders } from '@/pages/admin/AdminOrders'
 import { AdminAnnouncements } from '@/pages/admin/AdminAnnouncements'
 import { AdminReports } from '@/pages/admin/AdminReports'
+import { AdminAvailability } from '@/pages/admin/AdminAvailability'
 import { AdminAccount } from '@/pages/admin/AdminAccount'
 import { AdminPayouts } from '@/pages/admin/AdminPayouts'
 import { AdminRoute } from '@/components/layout/AdminRoute'
@@ -44,6 +45,7 @@ function App() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="announcements" element={<AdminAnnouncements />} />
           <Route path="reports" element={<AdminReports />} />
+          <Route path="availability" element={<AdminAvailability />} />
           <Route path="payouts" element={<AdminPayouts />} />
           <Route path="account" element={<AdminAccount />} />
         </Route>

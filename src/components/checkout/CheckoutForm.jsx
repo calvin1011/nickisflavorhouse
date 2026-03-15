@@ -3,6 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useCartStore, getCartSubtotal } from '@/store/cartStore'
+import { useAvailability, getAvailabilityForDate } from '@/hooks/useAvailability'
 import { checkoutSchema } from '@/utils/validators'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { DepositSummary } from './DepositSummary'
@@ -26,11 +27,16 @@ const defaultValues = {
   catering: undefined,
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export function CheckoutForm() {
   const navigate = useNavigate()
   const items = useCartStore((s) => s.items)
   const subtotal = useCartStore(getCartSubtotal)
   const hasCatering = items.some((i) => i.is_catering)
+  const { weekday, weekend } = useAvailability()
 
   const [step, setStep] = useState(1)
 
@@ -40,7 +46,9 @@ export function CheckoutForm() {
   })
 
   const orderType = methods.watch('order_type')
+  const pickupDate = methods.watch('pickup_date')
   const showCatering = orderType === 'catering' || hasCatering
+  const pickupSlots = getAvailabilityForDate(pickupDate, weekday, weekend)
 
   useEffect(() => {
     const currentCatering = methods.getValues('catering')
@@ -209,6 +217,7 @@ export function CheckoutForm() {
                       id="pickup_date"
                       type="date"
                       className={inputClass}
+                      min={todayStr()}
                       {...methods.register('pickup_date')}
                     />
                     {methods.formState.errors.pickup_date && (
@@ -225,8 +234,15 @@ export function CheckoutForm() {
                       id="pickup_time"
                       type="time"
                       className={inputClass}
+                      min={pickupSlots?.minTime}
+                      max={pickupSlots?.maxTime}
                       {...methods.register('pickup_time')}
                     />
+                    {pickupSlots && (
+                      <p className="mt-1 text-xs text-brand-foreground/60">
+                        Available {pickupSlots.minTime}–{pickupSlots.maxTime}
+                      </p>
+                    )}
                     {methods.formState.errors.pickup_time && (
                       <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
                         {methods.formState.errors.pickup_time.message}

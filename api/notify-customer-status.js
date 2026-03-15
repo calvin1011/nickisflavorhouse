@@ -53,7 +53,9 @@ export default async function handler(req, res) {
     return
   }
 
-  const result = await sendCustomerStatusEmail(order, status)
+  const pickupAddress =
+    process.env.PICKUP_ADDRESS || process.env.VITE_PICKUP_ADDRESS || ''
+  const result = await sendCustomerStatusEmail(order, status, { pickupAddress })
   if (!result.ok) {
     console.error('Notify customer status failed', result.error)
     res.status(500).json({ error: result.error || 'Failed to send email' })
