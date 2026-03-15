@@ -19,7 +19,7 @@ export const checkoutSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   email: z.string().email('Enter a valid email'),
   phone: phoneString,
-  order_type: z.enum(['pickup', 'catering'], { required_error: 'Select order type' }),
+  order_type: z.enum(['pickup', 'delivery', 'catering'], { required_error: 'Select order type' }),
   pickup_date: dateString.optional(),
   pickup_time: timeString.optional(),
   notes: z.string().max(2000).optional().default(''),

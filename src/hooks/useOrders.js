@@ -20,7 +20,7 @@ export function useOrders(options = {}) {
     try {
       const { data, error: fetchError } = await supabase
         .from('orders')
-        .select('id, order_number, customer_name, customer_email, customer_phone, order_type, status, payment_status, subtotal, deposit_amount, balance_due, notes, pickup_date, pickup_time, created_at, updated_at')
+        .select('id, order_number, customer_name, customer_email, customer_phone, order_type, status, payment_status, subtotal, payment_method, delivery_fee, notes, pickup_date, pickup_time, created_at, updated_at')
         .order('created_at', { ascending: false })
 
       if (fetchError) throw fetchError
