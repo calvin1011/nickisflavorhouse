@@ -96,10 +96,9 @@ function getClientIdentifier(req) {
   return req.socket?.remoteAddress || 'unknown'
 }
 
-function isWeekend(dateStr) {
-  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false
-  const day = new Date(dateStr + 'T12:00:00').getDay()
-  return day === 0 || day === 6
+function getDayOfWeek(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null
+  return new Date(dateStr + 'T12:00:00').getDay()
 }
 
 function timeToComparable(t) {
@@ -168,16 +167,28 @@ export default async function handler(req, res) {
   const data = sanitizeOrder(parsed.data)
 
   if (data.order_type === 'pickup' && data.pickup_date && data.pickup_time) {
-    const supabaseForAvailability = createClient(supabaseUrl, supabaseServiceKey)
-    const { data: availabilityRows } = await supabaseForAvailability
-      .from('pickup_availability')
-      .select('day_type, min_time, max_time')
-    const byDay = {}
-    for (const row of availabilityRows ?? []) {
-      byDay[row.day_type] = { min_time: row.min_time, max_time: row.max_time }
+    const dayOfWeek = getDayOfWeek(data.pickup_date)
+    if (dayOfWeek === null) {
+      res.status(400).json({ error: 'Invalid pickup date.' })
+      return
     }
-    const slot = isWeekend(data.pickup_date) ? byDay.weekend : byDay.weekday
-    if (slot && !isTimeInRange(data.pickup_time, slot.min_time, slot.max_time)) {
+    const supabaseForAvailability = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: row } = await supabaseForAvailability
+      .from('pickup_availability_by_day')
+      .select('is_available, min_time, max_time')
+      .eq('day_of_week', dayOfWeek)
+      .single()
+    if (!row) {
+      res.status(400).json({ error: 'Availability not configured for this day.' })
+      return
+    }
+    if (!row.is_available) {
+      res.status(400).json({
+        error: 'Pickup is not available on the selected day. Please choose another date.',
+      })
+      return
+    }
+    if (!isTimeInRange(data.pickup_time, row.min_time, row.max_time)) {
       res.status(400).json({
         error: 'Pickup time is outside available hours. Please choose a time within the displayed availability.',
       })

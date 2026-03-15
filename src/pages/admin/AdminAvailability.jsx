@@ -1,30 +1,34 @@
 import { useState, useEffect } from 'react'
-import { useAvailability } from '@/hooks/useAvailability'
+import { useAvailability, timeToInputValue } from '@/hooks/useAvailability'
 
 export function AdminAvailability() {
-  const { weekday, weekend, loading, error, updateSlot } = useAvailability()
+  const { slotsByDay, loading, error, updateDay } = useAvailability()
   const [saving, setSaving] = useState(null)
-  const [weekdayMin, setWeekdayMin] = useState('')
-  const [weekdayMax, setWeekdayMax] = useState('')
-  const [weekendMin, setWeekendMin] = useState('')
-  const [weekendMax, setWeekendMax] = useState('')
+  const [local, setLocal] = useState({})
 
   useEffect(() => {
-    if (weekday) {
-      setWeekdayMin(weekday.minTime)
-      setWeekdayMax(weekday.maxTime)
+    const next = {}
+    for (const slot of slotsByDay) {
+      next[slot.day_of_week] = {
+        is_available: slot.is_available ?? true,
+        min_time: timeToInputValue(slot.min_time) || '',
+        max_time: timeToInputValue(slot.max_time) || '',
+      }
     }
-    if (weekend) {
-      setWeekendMin(weekend.minTime)
-      setWeekendMax(weekend.maxTime)
-    }
-  }, [weekday, weekend])
+    setLocal(next)
+  }, [slotsByDay])
 
-  const handleWeekdaySubmit = async (e) => {
+  const handleSubmit = async (e, dayOfWeek) => {
     e.preventDefault()
-    setSaving('weekday')
+    const values = local[dayOfWeek]
+    if (!values) return
+    setSaving(dayOfWeek)
     try {
-      await updateSlot('weekday', { min_time: weekdayMin, max_time: weekdayMax })
+      await updateDay(dayOfWeek, {
+        is_available: values.is_available,
+        min_time: values.is_available ? values.min_time : null,
+        max_time: values.is_available ? values.max_time : null,
+      })
     } catch (err) {
       console.error(err)
     } finally {
@@ -32,16 +36,11 @@ export function AdminAvailability() {
     }
   }
 
-  const handleWeekendSubmit = async (e) => {
-    e.preventDefault()
-    setSaving('weekend')
-    try {
-      await updateSlot('weekend', { min_time: weekendMin, max_time: weekendMax })
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSaving(null)
-    }
+  const setLocalDay = (dayOfWeek, field, value) => {
+    setLocal((prev) => ({
+      ...prev,
+      [dayOfWeek]: { ...prev[dayOfWeek], [field]: value },
+    }))
   }
 
   if (loading) {
@@ -73,94 +72,91 @@ export function AdminAvailability() {
           Pickup availability
         </h1>
         <p className="mt-1 text-sm text-brand-foreground/70">
-          Set when customers can choose pickup times. Weekday = Mon–Fri; Weekend = Sat–Sun. These
-          times sync to the checkout form so customers only see valid slots.
+          Set pickup hours for each day. Turn a day off to make it not available (no time needed).
+          These times sync to the checkout so customers only see valid slots.
         </p>
 
-        <div className="mt-8 space-y-8">
-          <section className="rounded-lg border border-brand-muted/30 bg-white p-6">
-            <h2 className="font-display text-lg font-semibold text-brand-foreground">
-              Weekdays (Mon–Fri)
-            </h2>
-            <p className="mt-1 text-sm text-brand-foreground/70">
-              No pickups before the minimum time (e.g. 5:00 PM).
-            </p>
-            <form onSubmit={handleWeekdaySubmit} className="mt-4 flex flex-wrap items-end gap-4">
-              <div>
-                <label htmlFor="weekday-min" className={labelClass}>
-                  Earliest time
-                </label>
-                <input
-                  id="weekday-min"
-                  type="time"
-                  className={inputClass}
-                  value={weekdayMin}
-                  onChange={(e) => setWeekdayMin(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="weekday-max" className={labelClass}>
-                  Latest time
-                </label>
-                <input
-                  id="weekday-max"
-                  type="time"
-                  className={inputClass}
-                  value={weekdayMax}
-                  onChange={(e) => setWeekdayMax(e.target.value)}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={saving === 'weekday'}
-                className="rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-primary-dark disabled:opacity-50"
+        <div className="mt-8 space-y-4">
+          {slotsByDay.map((slot) => {
+            const values = local[slot.day_of_week] ?? {}
+            const available = values.is_available !== false
+            return (
+              <section
+                key={slot.day_of_week}
+                className="rounded-lg border border-brand-muted/30 bg-white p-4"
               >
-                {saving === 'weekday' ? 'Saving…' : 'Save weekdays'}
-              </button>
-            </form>
-          </section>
-
-          <section className="rounded-lg border border-brand-muted/30 bg-white p-6">
-            <h2 className="font-display text-lg font-semibold text-brand-foreground">
-              Weekend (Sat–Sun)
-            </h2>
-            <p className="mt-1 text-sm text-brand-foreground/70">
-              Set the time window for weekend pickups.
-            </p>
-            <form onSubmit={handleWeekendSubmit} className="mt-4 flex flex-wrap items-end gap-4">
-              <div>
-                <label htmlFor="weekend-min" className={labelClass}>
-                  Earliest time
-                </label>
-                <input
-                  id="weekend-min"
-                  type="time"
-                  className={inputClass}
-                  value={weekendMin}
-                  onChange={(e) => setWeekendMin(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="weekend-max" className={labelClass}>
-                  Latest time
-                </label>
-                <input
-                  id="weekend-max"
-                  type="time"
-                  className={inputClass}
-                  value={weekendMax}
-                  onChange={(e) => setWeekendMax(e.target.value)}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={saving === 'weekend'}
-                className="rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-primary-dark disabled:opacity-50"
-              >
-                {saving === 'weekend' ? 'Saving…' : 'Save weekend'}
-              </button>
-            </form>
-          </section>
+                <form
+                  onSubmit={(e) => handleSubmit(e, slot.day_of_week)}
+                  className="flex flex-wrap items-end gap-4"
+                >
+                  <div className="w-28 shrink-0">
+                    <span className={labelClass}>{slot.day_name}</span>
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        id={`available-${slot.day_of_week}`}
+                        type="checkbox"
+                        checked={available}
+                        onChange={(e) =>
+                          setLocalDay(slot.day_of_week, 'is_available', e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-brand-muted text-brand-primary focus:ring-brand-primary"
+                      />
+                      <label htmlFor={`available-${slot.day_of_week}`} className="text-sm">
+                        Available
+                      </label>
+                    </div>
+                  </div>
+                  {available ? (
+                    <>
+                      <div>
+                        <label
+                          htmlFor={`min-${slot.day_of_week}`}
+                          className={labelClass}
+                        >
+                          Earliest
+                        </label>
+                        <input
+                          id={`min-${slot.day_of_week}`}
+                          type="time"
+                          className={inputClass}
+                          value={values.min_time ?? ''}
+                          onChange={(e) =>
+                            setLocalDay(slot.day_of_week, 'min_time', e.target.value)
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor={`max-${slot.day_of_week}`}
+                          className={labelClass}
+                        >
+                          Latest
+                        </label>
+                        <input
+                          id={`max-${slot.day_of_week}`}
+                          type="time"
+                          className={inputClass}
+                          value={values.max_time ?? ''}
+                          onChange={(e) =>
+                            setLocalDay(slot.day_of_week, 'max_time', e.target.value)
+                          }
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-brand-foreground/60">Not available</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={saving === slot.day_of_week}
+                    className="rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-primary-dark disabled:opacity-50"
+                  >
+                    {saving === slot.day_of_week ? 'Saving…' : 'Save'}
+                  </button>
+                </form>
+              </section>
+            )
+          })}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { useCartStore, getCartSubtotal } from '@/store/cartStore'
 import { useAvailability, getAvailabilityForDate } from '@/hooks/useAvailability'
+import { PickupHoursSummary } from './PickupHoursSummary'
 import { checkoutSchema } from '@/utils/validators'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { DepositSummary } from './DepositSummary'
@@ -36,7 +37,7 @@ export function CheckoutForm() {
   const items = useCartStore((s) => s.items)
   const subtotal = useCartStore(getCartSubtotal)
   const hasCatering = items.some((i) => i.is_catering)
-  const { weekday, weekend } = useAvailability()
+  const { byDay } = useAvailability()
 
   const [step, setStep] = useState(1)
 
@@ -48,7 +49,8 @@ export function CheckoutForm() {
   const orderType = methods.watch('order_type')
   const pickupDate = methods.watch('pickup_date')
   const showCatering = orderType === 'catering' || hasCatering
-  const pickupSlots = getAvailabilityForDate(pickupDate, weekday, weekend)
+  const pickupSlots = getAvailabilityForDate(pickupDate, byDay)
+  const pickupNotAvailable = pickupSlots?.notAvailable === true
 
   useEffect(() => {
     const currentCatering = methods.getValues('catering')
@@ -64,6 +66,12 @@ export function CheckoutForm() {
       methods.setValue('catering', undefined)
     }
   }, [showCatering, methods])
+
+  useEffect(() => {
+    if (orderType === 'pickup' && pickupNotAvailable && methods.getValues('pickup_time')) {
+      methods.setValue('pickup_time', '')
+    }
+  }, [orderType, pickupNotAvailable, methods])
 
   const onSubmit = () => {
     // Payment is handled by PaymentButton via handleSubmit(PaymentButton.onSubmit)
@@ -208,46 +216,55 @@ export function CheckoutForm() {
               </div>
 
               {orderType === 'pickup' && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="pickup_date" className={labelClass}>
-                      Pickup date
-                    </label>
-                    <input
-                      id="pickup_date"
-                      type="date"
-                      className={inputClass}
-                      min={todayStr()}
-                      {...methods.register('pickup_date')}
-                    />
-                    {methods.formState.errors.pickup_date && (
-                      <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
-                        {methods.formState.errors.pickup_date.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="pickup_time" className={labelClass}>
-                      Pickup time
-                    </label>
-                    <input
-                      id="pickup_time"
-                      type="time"
-                      className={inputClass}
-                      min={pickupSlots?.minTime}
-                      max={pickupSlots?.maxTime}
-                      {...methods.register('pickup_time')}
-                    />
-                    {pickupSlots && (
-                      <p className="mt-1 text-xs text-brand-foreground/60">
-                        Available {pickupSlots.minTime}–{pickupSlots.maxTime}
-                      </p>
-                    )}
-                    {methods.formState.errors.pickup_time && (
-                      <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
-                        {methods.formState.errors.pickup_time.message}
-                      </p>
-                    )}
+                <div className="space-y-4">
+                  <PickupHoursSummary />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="pickup_date" className={labelClass}>
+                        Pickup date
+                      </label>
+                      <input
+                        id="pickup_date"
+                        type="date"
+                        className={inputClass}
+                        min={todayStr()}
+                        {...methods.register('pickup_date')}
+                      />
+                      {pickupNotAvailable && (
+                        <p className="mt-1 text-sm text-amber-700" role="alert">
+                          Pickup is not available on {pickupSlots?.dayName}. Please choose another date.
+                        </p>
+                      )}
+                      {methods.formState.errors.pickup_date && (
+                        <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
+                          {methods.formState.errors.pickup_date.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label htmlFor="pickup_time" className={labelClass}>
+                        Pickup time
+                      </label>
+                      <input
+                        id="pickup_time"
+                        type="time"
+                        className={inputClass}
+                        min={pickupNotAvailable ? undefined : pickupSlots?.minTime}
+                        max={pickupNotAvailable ? undefined : pickupSlots?.maxTime}
+                        disabled={pickupNotAvailable}
+                        {...methods.register('pickup_time')}
+                      />
+                      {pickupSlots && !pickupNotAvailable && (
+                        <p className="mt-1 text-xs text-brand-foreground/60">
+                          Available {pickupSlots.minTime}–{pickupSlots.maxTime}
+                        </p>
+                      )}
+                      {methods.formState.errors.pickup_time && (
+                        <p className="mt-1 text-sm text-red-600" role="alert" data-field-error>
+                          {methods.formState.errors.pickup_time.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
