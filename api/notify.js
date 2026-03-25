@@ -18,6 +18,14 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
 }
 
+function formatPaymentMethodLabel(m) {
+  if (m === 'stripe') return 'Card (Stripe)'
+  if (m === 'cashapp') return 'Cash App'
+  if (m === 'zelle') return 'Zelle'
+  if (m === 'cash') return 'Cash at pickup'
+  return ''
+}
+
 /**
  * @param {object} order - Order with items, customer fields, etc.
  * @returns {string} HTML email body
@@ -28,13 +36,29 @@ function buildOrderEmailHtml(order) {
   const customerEmail = escapeHtml(String(order.customer_email ?? ''))
   const customerPhone = escapeHtml(String(order.customer_phone ?? ''))
   const orderType = escapeHtml(String(order.order_type ?? 'pickup'))
-  const subtotal = Number(order.subtotal ?? 0).toFixed(2)
+  const deliveryFeeNum = Number(order.delivery_fee) || 0
+  const orderTotal = (Number(order.subtotal ?? 0) + deliveryFeeNum).toFixed(2)
+  const paymentMethodLabel = formatPaymentMethodLabel(order.payment_method)
+  const paymentMethodRow = paymentMethodLabel
+    ? `
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #eee;">
+                    <span style="color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.04em;">Payment method</span><br>
+                    <span style="font-size:15px;color:#1a1a1a;">${escapeHtml(paymentMethodLabel)}</span>
+                  </td>
+                </tr>`
+    : ''
+  const paidInFull = order.payment_status === 'paid_in_full'
+  const paymentStatusHtml = paidInFull
+    ? '<span style="font-size:13px;color:#2d5016;font-weight:600;">Paid in full</span>'
+    : `<span style="font-size:13px;color:#854d0e;font-weight:600;">Payment pending — ${escapeHtml(paymentMethodLabel || 'Pay at pickup')}</span>`
   const notes = order.notes ? escapeHtml(String(order.notes)) : ''
   const cateringNotes = order.catering_notes ? escapeHtml(String(order.catering_notes)) : ''
 
+  const scheduleLabel = order.order_type === 'delivery' ? 'Delivery' : 'Pickup'
   const pickupLine =
-    order.pickup_date && order.order_type === 'pickup'
-      ? `${escapeHtml(String(order.pickup_date))}${order.pickup_time ? ` at ${escapeHtml(String(order.pickup_time))}` : ''}`
+    order.pickup_date && (order.order_type === 'pickup' || order.order_type === 'delivery')
+      ? `${escapeHtml(scheduleLabel)}: ${escapeHtml(String(order.pickup_date))}${order.pickup_time ? ` at ${escapeHtml(String(order.pickup_time))}` : ''}`
       : ''
   const eventLine =
     order.is_catering && order.event_date
@@ -94,10 +118,11 @@ function buildOrderEmailHtml(order) {
                     <span style="font-size:15px;color:#1a1a1a;text-transform:capitalize;">${orderType}</span>
                   </td>
                 </tr>
+                ${paymentMethodRow}
                 ${pickupLine ? `
                 <tr>
                   <td style="padding:8px 0;border-bottom:1px solid #eee;">
-                    <span style="color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.04em;">Pickup</span><br>
+                    <span style="color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.04em;">Schedule</span><br>
                     <span style="font-size:15px;color:#1a1a1a;">${pickupLine}</span>
                   </td>
                 </tr>
@@ -136,12 +161,12 @@ function buildOrderEmailHtml(order) {
                 <tr>
                   <td align="right" style="padding:6px 0;">
                     <span style="font-size:15px;color:#666;">Order total</span>
-                    <span style="font-size:18px;font-weight:700;color:#2d5016;margin-left:12px;">$${subtotal}</span>
+                    <span style="font-size:18px;font-weight:700;color:#2d5016;margin-left:12px;">$${orderTotal}</span>
                   </td>
                 </tr>
                 <tr>
                   <td align="right" style="padding:4px 0;">
-                    <span style="font-size:13px;color:#2d5016;font-weight:600;">Paid in full</span>
+                    ${paymentStatusHtml}
                   </td>
                 </tr>
               </table>

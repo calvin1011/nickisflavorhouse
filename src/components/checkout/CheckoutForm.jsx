@@ -10,8 +10,6 @@ import { formatCurrency } from '@/utils/formatCurrency'
 import { sanitizeString } from '@/lib/sanitize'
 import { CateringForm } from './CateringForm'
 import { CartItem } from '@/components/cart/CartItem'
-import { supabase } from '@/lib/supabase'
-
 const inputClass =
   'mt-1 block w-full rounded-md border border-brand-muted/40 bg-white px-3 py-2 text-brand-foreground shadow-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary'
 
@@ -216,91 +214,56 @@ export function CheckoutForm() {
       return
     }
 
-    const orderNumber = `NFH-${Date.now().toString().slice(-6)}`
-    const orderRecord = {
-      order_number: orderNumber,
-      customer_name: sanitizeString(form.name),
-      customer_email: sanitizeString(form.email),
-      customer_phone: sanitizeString(form.phone),
-      order_type: data.order_type,
-      subtotal,
-      deposit_amount: 0,
-      balance_due: 0,
-      payment_status: 'pending',
-      payment_method: paymentMethod,
-      status: 'pending',
-      notes: sanitizeString(form.notes),
-      pickup_date: (data.order_type === 'pickup' || data.order_type === 'delivery') ? data.pickup_date || null : null,
-      pickup_time: (data.order_type === 'pickup' || data.order_type === 'delivery') ? data.pickup_time || null : null,
-      delivery_address: orderType === 'delivery' ? sanitizeString(deliveryAddress) : null,
-      delivery_fee: orderType === 'delivery' ? deliveryFee : 0,
-      delivery_distance_miles: orderType === 'delivery' && deliveryDistance != null ? parseFloat(deliveryDistance) : null,
-    }
-    if (data.catering && data.order_type === 'catering') {
-      orderRecord.is_catering = true
-      orderRecord.event_date = data.catering.event_date || null
-      orderRecord.event_time = data.catering.event_time || null
-      orderRecord.event_location = data.catering.event_location || null
-      orderRecord.guest_count = data.catering.guest_count ?? null
-      orderRecord.catering_notes = data.catering.catering_notes || null
-    }
-
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert(orderRecord)
-      .select()
-      .single()
-
-    if (orderError || !order) {
-      console.error(orderError)
-      setSubmitError('Something went wrong. Please try again.')
-      setSubmitLoading(false)
-      return
-    }
-
-    const orderItems = items.map((item) => ({
-      order_id: order.id,
-      menu_item_id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-    }))
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
-    if (itemsError) {
-      console.error(itemsError)
-      setSubmitError('Could not save order items. Please contact us.')
-      setSubmitLoading(false)
-      return
-    }
-
-    const orderForNotify = { ...order, items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })) }
     try {
-      const tokenRes = await fetch(`${window.location.origin}/api/notify-token`, {
+      const payload = {
+        name: sanitizeString(form.name),
+        email: sanitizeString(form.email),
+        phone: sanitizeString(form.phone),
+        order_type: data.order_type,
+        pickup_date: data.pickup_date || undefined,
+        pickup_time: data.pickup_time || undefined,
+        notes: sanitizeString(form.notes),
+        catering: data.catering,
+        items: items.map(({ id, name, price, quantity, is_catering }) => ({
+          id,
+          name,
+          price,
+          quantity,
+          is_catering: !!is_catering,
+        })),
+        subtotal,
+        payment_method: paymentMethod,
+      }
+      if (orderType === 'delivery') {
+        payload.delivery_address = sanitizeString(deliveryAddress)
+        payload.delivery_fee = deliveryFee
+        payload.delivery_distance_miles = parseFloat(deliveryDistance)
+      }
+      const res = await fetch(`${window.location.origin}/api/create-pay-at-pickup-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: order.id }),
+        body: JSON.stringify(payload),
       })
-      const tokenData = tokenRes.ok ? await tokenRes.json().catch(() => null) : null
-      if (tokenData?.token && tokenData?.createdAt) {
-        await fetch(`${window.location.origin}/api/notify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            order: orderForNotify,
-            orderId: order.id,
-            createdAt: tokenData.createdAt,
-            token: tokenData.token,
-          }),
-        })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setSubmitError(json.error || 'Something went wrong. Please try again.')
+        setSubmitLoading(false)
+        return
       }
-    } catch {
-      // non-blocking
-    }
+      const order = json.order
+      if (!order?.id) {
+        setSubmitError('Something went wrong. Please try again.')
+        setSubmitLoading(false)
+        return
+      }
 
-    clearCart()
-    navigate(`/order-confirmation?order_id=${order.id}&method=${paymentMethod}`, {
-      state: { order, items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })) },
-    })
+      clearCart()
+      navigate(`/order-confirmation?order_id=${order.id}&method=${paymentMethod}`, {
+        state: { order, items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })) },
+      })
+    } catch (err) {
+      setSubmitError(err.message || 'Network error')
+    }
     setSubmitLoading(false)
   }
 

@@ -1,23 +1,18 @@
 /**
- * Create Checkout: validate payload, create pending order + order_items in Supabase,
- * create Stripe Checkout Session, return session URL.
- * Rate limited via Upstash when UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set.
+ * POST: validate checkout payload, create order + order_items with service role (bypasses RLS).
+ * Used for Cash App, Zelle, and cash at pickup — same server-side validation as Stripe checkout.
  */
-import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import {
   sanitizeOrder,
-  checkoutPayloadSchema,
+  payAtPickupPayloadSchema,
   generateOrderNumber,
   getClientIdentifier,
   validatePickupWindow,
 } from './lib/checkoutPayload.js'
-
-/**
- * Stripe Checkout: full order total (subtotal + delivery fee if delivery). DB stores deposit_amount = 0, balance_due = 0.
- */
+import { dispatchNotification } from './notify.js'
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -37,7 +32,7 @@ export default async function handler(req, res) {
       limiter: Ratelimit.slidingWindow(10, '1 m'),
       analytics: true,
     })
-    const { success } = await ratelimit.limit(`create-checkout:${getClientIdentifier(req)}`)
+    const { success } = await ratelimit.limit(`create-pay-at-pickup:${getClientIdentifier(req)}`)
     if (!success) {
       res.status(429).json({ error: 'Too many requests. Please try again in a minute.' })
       return
@@ -46,11 +41,8 @@ export default async function handler(req, res) {
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const stripeSecret = process.env.STRIPE_SECRET_KEY
-  const appUrl = process.env.VITE_APP_URL || 'http://localhost:5173'
-
-  if (!supabaseUrl || !supabaseServiceKey || !stripeSecret) {
-    console.error('Missing env: VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or STRIPE_SECRET_KEY')
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing env: VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
     res.status(500).json({ error: 'Server configuration error' })
     return
   }
@@ -63,7 +55,7 @@ export default async function handler(req, res) {
     return
   }
 
-  const parsed = checkoutPayloadSchema.safeParse(body)
+  const parsed = payAtPickupPayloadSchema.safeParse(body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Validation failed', details: parsed.error.flatten() })
     return
@@ -80,10 +72,9 @@ export default async function handler(req, res) {
 
   const subtotalDollars = data.subtotal
   const deliveryFeeDollars = (data.order_type === 'delivery' && typeof data.delivery_fee === 'number') ? data.delivery_fee : 0
-
   const orderNumber = generateOrderNumber()
-
   const catering = data.catering || {}
+
   const orderRecord = {
     order_number: orderNumber,
     customer_name: data.name,
@@ -92,7 +83,7 @@ export default async function handler(req, res) {
     order_type: data.order_type,
     status: 'pending',
     payment_status: 'pending',
-    payment_method: 'stripe',
+    payment_method: data.payment_method,
     subtotal: subtotalDollars,
     deposit_amount: 0,
     balance_due: 0,
@@ -113,11 +104,11 @@ export default async function handler(req, res) {
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert(orderRecord)
-    .select('id')
+    .select()
     .single()
 
   if (orderError || !order) {
-    console.error('Order insert failed', orderError)
+    console.error('Pay-at-pickup order insert failed', orderError)
     res.status(500).json({ error: 'Could not create order' })
     return
   }
@@ -132,59 +123,26 @@ export default async function handler(req, res) {
 
   const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
   if (itemsError) {
-    console.error('Order items insert failed', itemsError)
+    console.error('Pay-at-pickup order items insert failed', itemsError)
     await supabase.from('orders').delete().eq('id', order.id)
     res.status(500).json({ error: 'Could not create order items' })
     return
   }
 
-  const stripe = new Stripe(stripeSecret)
-  const successUrl = `${appUrl.replace(/\/$/, '')}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`
-  const cancelUrl = `${appUrl.replace(/\/$/, '')}/checkout`
-
-  const lineItems = [
-    {
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: "Order — Nicki's Flavor House",
-          description: `Order ${orderNumber}`,
-        },
-        unit_amount: Math.round(subtotalDollars * 100),
-      },
-      quantity: 1,
-    },
-  ]
-  if (deliveryFeeDollars > 0) {
-    lineItems.push({
-      price_data: {
-        currency: 'usd',
-        product_data: { name: 'Delivery Fee' },
-        unit_amount: Math.round(deliveryFeeDollars * 100),
-      },
-      quantity: 1,
-    })
+  const itemsForEmail = data.items.map((i) => ({
+    name: i.name,
+    quantity: i.quantity,
+    price: i.price,
+  }))
+  const orderForNotify = {
+    ...order,
+    items: itemsForEmail,
   }
-
-  let session
   try {
-    session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        order_id: order.id,
-      },
-    })
-  } catch (err) {
-    console.error('Stripe session create failed', err)
-    await supabase.from('order_items').delete().eq('order_id', order.id)
-    await supabase.from('orders').delete().eq('id', order.id)
-    res.status(500).json({ error: 'Could not start payment' })
-    return
+    await dispatchNotification(orderForNotify)
+  } catch (e) {
+    console.error('dispatchNotification failed', e)
   }
 
-  res.status(200).json({ url: session.url })
+  res.status(200).json({ order })
 }
