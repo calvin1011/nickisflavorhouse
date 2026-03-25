@@ -86,7 +86,7 @@ describe('PaymentButton', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('calls create-checkout API with payload when form is valid', async () => {
+  it('calls /api/checkout with payload when form is valid', async () => {
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ url: 'https://stripe.com/checkout' }) })
 
     render(
@@ -99,7 +99,7 @@ describe('PaymentButton', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/create-checkout'),
+        expect.stringContaining('/api/checkout'),
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -132,7 +132,7 @@ describe('PaymentButton', () => {
     })
   })
 
-  it('shows API error message when create-checkout returns non-ok', async () => {
+  it('shows API error message when /api/checkout returns non-ok', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'Validation failed' }) })
 
     render(

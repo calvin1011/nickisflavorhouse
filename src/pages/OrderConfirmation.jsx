@@ -1,5 +1,6 @@
 import { useSearchParams, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { useCartStore } from '@/store/cartStore'
@@ -19,7 +20,12 @@ export function OrderConfirmation() {
   const clearCart = useCartStore((s) => s.clearCart)
   const [order, setOrder] = useState(location.state?.order ?? null)
   const [items, setItems] = useState(location.state?.items ?? [])
-  const [loading, setLoading] = useState(!!validSessionId && !location.state?.order)
+  const [loading, setLoading] = useState(() => {
+    if (location.state?.order) return false
+    if (validSessionId) return true
+    if (orderId && paymentMethod && paymentMethod !== 'stripe') return true
+    return false
+  })
   const [error, setError] = useState(null)
 
   const isPayAtPickup = orderId && paymentMethod && paymentMethod !== 'stripe'
@@ -43,7 +49,7 @@ export function OrderConfirmation() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    const url = `${window.location.origin}/api/order-by-session?session_id=${encodeURIComponent(validSessionId)}`
+    const url = `${window.location.origin}/api/order?session_id=${encodeURIComponent(validSessionId)}`
     fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
@@ -64,6 +70,67 @@ export function OrderConfirmation() {
     return () => { cancelled = true }
   }, [validSessionId, location.state])
 
+  useEffect(() => {
+    if (!orderId || !paymentMethod || paymentMethod === 'stripe') return
+    if (location.state?.order) {
+      setOrder(location.state.order)
+      setItems(location.state.items || [])
+      setLoading(false)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    fetch(`${window.location.origin}/api/order?order_id=${encodeURIComponent(orderId)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
+        return r.json()
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setOrder(data.order)
+          setItems(data.items || [])
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [orderId, paymentMethod, location.state])
+
+  if (isPayAtPickup && loading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto flex-1 w-full max-w-2xl px-4 py-12 sm:px-6">
+          <p className="text-brand-foreground/80">Loading your order...</p>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (isPayAtPickup && error && !payAtPickupOrder) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto flex-1 w-full max-w-2xl px-4 py-12 sm:px-6">
+          <h1 className="font-display text-3xl font-bold text-brand-foreground">
+            Order confirmation
+          </h1>
+          <p className="mt-4 text-brand-foreground/80">{error}</p>
+          <Link to="/contact" className="mt-4 inline-block text-brand-primary hover:underline">
+            Contact Nicki
+          </Link>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
   if (isPayAtPickup && payAtPickupOrder) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -78,17 +145,26 @@ export function OrderConfirmation() {
           <div className="mt-6">
             <PaymentLinks paymentMethod={paymentMethod} subtotal={subtotalForPayAtPickup} />
           </div>
-          {payAtPickupOrder.order_type === 'pickup' && (
+          <p className="mt-6 rounded-lg border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-950">
+            If you have any questions about payment or run into an issue, contact Nicki for payment details. She can help you complete Cash App, Zelle, or cash at pickup.
+          </p>
+          {(payAtPickupOrder.order_type === 'pickup' || payAtPickupOrder.order_type === 'delivery') && (
             <div className="mt-6 flex items-start gap-2 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
               <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden />
               <div>
-                <p className="font-medium text-brand-foreground">Pickup location</p>
+                <p className="font-medium text-brand-foreground">
+                  {payAtPickupOrder.order_type === 'delivery' ? 'Delivery' : 'Pickup location'}
+                </p>
                 <p className="mt-1 text-sm text-brand-foreground/90">
-                  {siteConfig.pickupAddress}
+                  {payAtPickupOrder.order_type === 'delivery'
+                    ? (payAtPickupOrder.delivery_address || siteConfig.pickupAddress)
+                    : siteConfig.pickupAddress}
                 </p>
                 {payAtPickupOrder.pickup_date && (
                   <p className="mt-2 text-sm text-brand-foreground/80">
-                    Your pickup: {new Date(payAtPickupOrder.pickup_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                    {payAtPickupOrder.order_type === 'delivery' ? 'Scheduled delivery' : 'Your pickup'}
+                    {': '}
+                    {new Date(payAtPickupOrder.pickup_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                     {payAtPickupOrder.pickup_time && ` at ${payAtPickupOrder.pickup_time}`}
                   </p>
                 )}
@@ -97,7 +173,7 @@ export function OrderConfirmation() {
           )}
           <div className="mt-6">
             <a
-              href="https://instagram.com"
+              href={siteConfig.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-brand-primary hover:underline"
@@ -123,9 +199,12 @@ export function OrderConfirmation() {
           <p className="mt-4 text-brand-foreground/80">
             Your order was placed. Please pay at pickup using the method you selected.
           </p>
+          <p className="mt-4 rounded-lg border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-950">
+            If you need help with payment, contact Nicki for details.
+          </p>
           <div className="mt-6">
             <a
-              href="https://instagram.com"
+              href={siteConfig.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-brand-primary hover:underline"
@@ -197,6 +276,23 @@ export function OrderConfirmation() {
                 </div>
               </div>
             )}
+            {order.order_type === 'delivery' && (
+              <div className="mt-4 flex items-start gap-2 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden />
+                <div>
+                  <p className="font-medium text-brand-foreground">Delivery</p>
+                  {order.delivery_address && (
+                    <p className="mt-1 text-sm text-brand-foreground/90">{order.delivery_address}</p>
+                  )}
+                  {order.pickup_date && (
+                    <p className="mt-2 text-sm text-brand-foreground/80">
+                      Scheduled: {new Date(order.pickup_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                      {order.pickup_time && ` at ${order.pickup_time}`}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="mt-6 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
               <h2 className="font-display text-lg font-semibold text-brand-foreground">Order summary</h2>
               <ul className="mt-3 space-y-2 text-sm text-brand-foreground/90">
@@ -220,7 +316,7 @@ export function OrderConfirmation() {
             </div>
             <div className="mt-6">
               <a
-                href="https://instagram.com"
+                href={siteConfig.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-brand-primary hover:underline"

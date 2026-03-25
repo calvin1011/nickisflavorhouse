@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { formatCurrency, formatDollars } from '@/utils/formatCurrency'
+import { formatPaymentMethodLabel, formatPaymentStatusLabel } from '@/utils/paymentLabels'
 import { OrderStatusBadge } from './OrderStatusBadge'
 import { cn } from '@/lib/utils'
 
@@ -113,23 +114,51 @@ export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrd
             <dl className="text-sm text-brand-foreground/90 space-y-1">
               <div className="flex justify-between">
                 <dt>Type</dt>
-                <dd>{order.order_type === 'catering' ? 'Catering' : 'Pickup'}</dd>
+                <dd>
+                  {order.order_type === 'catering'
+                    ? 'Catering'
+                    : order.order_type === 'delivery'
+                      ? 'Delivery'
+                      : 'Pickup'}
+                </dd>
               </div>
+              {order.order_type === 'delivery' && order.delivery_address && (
+                <div className="flex justify-between gap-2">
+                  <dt>Address</dt>
+                  <dd className="text-right">{order.delivery_address}</dd>
+                </div>
+              )}
               {order.pickup_date && (
                 <div className="flex justify-between">
-                  <dt>Pickup date</dt>
+                  <dt>{order.order_type === 'delivery' ? 'Delivery date' : 'Pickup date'}</dt>
                   <dd>{formatDate(order.pickup_date)}</dd>
                 </div>
               )}
               {order.pickup_time && (
                 <div className="flex justify-between">
-                  <dt>Pickup time</dt>
+                  <dt>{order.order_type === 'delivery' ? 'Delivery time' : 'Pickup time'}</dt>
                   <dd>{order.pickup_time}</dd>
                 </div>
               )}
               <div className="flex justify-between items-center">
                 <dt>Status</dt>
                 <dd><OrderStatusBadge status={order.status} /></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section>
+            <h3 className="text-xs font-medium uppercase tracking-wide text-brand-foreground/60 mb-2">
+              Payment
+            </h3>
+            <dl className="text-sm text-brand-foreground/90 space-y-1">
+              <div className="flex justify-between gap-2">
+                <dt>Method</dt>
+                <dd className="text-right">{formatPaymentMethodLabel(order.payment_method) || '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt>Payment status</dt>
+                <dd className="text-right">{formatPaymentStatusLabel(order.payment_status)}</dd>
               </div>
             </dl>
           </section>
@@ -195,16 +224,24 @@ export function OrderDetailDrawer({ order, open, onClose, onUpdateStatus, getOrd
 
           <section className="border-t border-brand-muted/30 pt-4">
             <dl className="text-sm space-y-1">
-              <div className="flex justify-between font-medium text-brand-foreground">
-                <dt>Order total</dt>
-                <dd>{formatDollars(order.subtotal)}</dd>
-              </div>
-              {order.payment_status === 'paid' && (
+              {(Number(order.delivery_fee) || 0) > 0 && (
                 <div className="flex justify-between text-brand-foreground/90">
-                  <dt>Payment</dt>
-                  <dd>Paid in full</dd>
+                  <dt>Subtotal</dt>
+                  <dd>{formatDollars(order.subtotal)}</dd>
                 </div>
               )}
+              {(Number(order.delivery_fee) || 0) > 0 && (
+                <div className="flex justify-between text-brand-foreground/90">
+                  <dt>Delivery fee</dt>
+                  <dd>{formatDollars(order.delivery_fee)}</dd>
+                </div>
+              )}
+              <div className="flex justify-between font-medium text-brand-foreground">
+                <dt>Order total</dt>
+                <dd>
+                  {formatDollars((Number(order.subtotal) || 0) + (Number(order.delivery_fee) || 0))}
+                </dd>
+              </div>
             </dl>
           </section>
         </div>

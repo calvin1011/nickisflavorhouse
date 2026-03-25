@@ -1,4 +1,5 @@
 import { formatDollars } from '@/utils/formatCurrency'
+import { formatPaymentMethodLabel } from '@/utils/paymentLabels'
 import { OrderStatusBadge } from './OrderStatusBadge'
 
 function formatDate(iso) {
@@ -22,12 +23,13 @@ export function OrderTable({ orders, onSelectOrder }) {
 
   return (
     <div className="overflow-x-auto rounded-lg border border-brand-muted/30 bg-white">
-      <table className="w-full min-w-[700px] text-left text-sm">
+      <table className="w-full min-w-[880px] text-left text-sm">
         <thead>
           <tr className="border-b border-brand-muted/30 bg-brand-muted/10">
             <th className="px-4 py-3 font-medium text-brand-foreground">Order</th>
             <th className="px-4 py-3 font-medium text-brand-foreground">Customer</th>
             <th className="px-4 py-3 font-medium text-brand-foreground">Type</th>
+            <th className="px-4 py-3 font-medium text-brand-foreground">Payment</th>
             <th className="px-4 py-3 font-medium text-brand-foreground">Date</th>
             <th className="px-4 py-3 font-medium text-brand-foreground">Total</th>
             <th className="px-4 py-3 font-medium text-brand-foreground">Status</th>
@@ -51,13 +53,16 @@ export function OrderTable({ orders, onSelectOrder }) {
                 {order.customer_name ?? '—'}
               </td>
               <td className="px-4 py-3 text-brand-foreground/80">
-                {order.order_type === 'catering' ? 'Catering' : 'Pickup'}
+                {order.order_type === 'catering' ? 'Catering' : order.order_type === 'delivery' ? 'Delivery' : 'Pickup'}
+              </td>
+              <td className="px-4 py-3 text-brand-foreground/80 max-w-[140px]">
+                {formatPaymentMethodLabel(order.payment_method) || '—'}
               </td>
               <td className="px-4 py-3 text-brand-foreground/80">
                 {formatDate(order.pickup_date ?? order.created_at)}
               </td>
               <td className="px-4 py-3 text-brand-foreground/80">
-                {formatDollars(order.subtotal)}
+                {formatDollars((Number(order.subtotal) || 0) + (Number(order.delivery_fee) || 0))}
               </td>
               <td className="px-4 py-3">
                 <OrderStatusBadge status={order.status} />

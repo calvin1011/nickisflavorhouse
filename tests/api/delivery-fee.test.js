@@ -4,7 +4,7 @@
  * @vitest-environment node
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import handler from './delivery-fee.js'
+import handler from '../../api/delivery-fee.js'
 
 function createMockRes() {
   const out = { _status: null, _body: null, _ended: false }
