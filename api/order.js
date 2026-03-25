@@ -73,9 +73,11 @@ export default async function handler(req, res) {
   }
 
   if (orderIdRaw && UUID_RE.test(orderIdRaw)) {
+    const isSpecial = req.query.special === 'true'
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, order_number, customer_name, customer_email, subtotal, order_type, pickup_date, pickup_time, payment_method, delivery_fee, delivery_address')
+      .select('id, order_number, customer_name, customer_email, subtotal, order_type, pickup_date, pickup_time, payment_method, delivery_fee, delivery_address, notes')
       .eq('id', orderIdRaw)
       .single()
 
@@ -85,7 +87,8 @@ export default async function handler(req, res) {
     }
 
     const payAtPickupMethods = ['cashapp', 'zelle', 'cash']
-    if (!payAtPickupMethods.includes(order.payment_method)) {
+    const isSpecialOrder = isSpecial && Number(order.subtotal) === 0
+    if (!isSpecialOrder && !payAtPickupMethods.includes(order.payment_method)) {
       res.status(404).json({ error: 'Order not found' })
       return
     }

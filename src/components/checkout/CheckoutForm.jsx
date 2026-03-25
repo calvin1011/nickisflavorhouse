@@ -462,7 +462,7 @@ export function CheckoutForm() {
                   )}
                   {deliveryFee != null && !deliveryError && (
                     <p className="text-sm text-green-700 font-medium">
-                      {deliveryDistance} miles away — {formatCurrency(deliveryFee)} delivery fee
+                      {deliveryDistance} miles away, {formatCurrency(deliveryFee)} delivery fee
                     </p>
                   )}
                 </div>
@@ -586,7 +586,7 @@ export function CheckoutForm() {
                         color: paymentMethod === 'cashapp' ? '#fff' : '#00D632',
                       }}
                     >
-                      <span>$</span> Cash App — $nickiydoll
+                      <span>$</span> Cash App: $nickiydoll
                     </button>
                     <button
                       type="button"
@@ -597,7 +597,7 @@ export function CheckoutForm() {
                         color: paymentMethod === 'zelle' ? '#fff' : '#6D1ED4',
                       }}
                     >
-                      <span>Z</span> Zelle — naomieb75@icloud.com
+                      <span>Z</span> Zelle: naomieb75@icloud.com
                     </button>
                     <button
                       type="button"
@@ -608,7 +608,7 @@ export function CheckoutForm() {
                         color: paymentMethod === 'cash' ? '#fff' : '#1A1A1A',
                       }}
                     >
-                      Cash — Exact change only
+                      Cash: Exact change only
                     </button>
                   </div>
                 </div>
@@ -625,7 +625,7 @@ export function CheckoutForm() {
                 disabled={submitLoading || (orderType === 'delivery' && (deliveryFee == null || !!deliveryError || !pickupDate || !pickupTime))}
                 className="mt-4 w-full rounded-md bg-brand-primary px-4 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors disabled:opacity-50"
               >
-                {submitLoading ? 'Processing…' : `Place order — ${formatCurrency(orderTotal)}`}
+                {submitLoading ? 'Processing…' : `Place order: ${formatCurrency(orderTotal)}`}
               </button>
               {validationMessage && (
                 <p className="mt-2 text-sm text-amber-700" role="alert">

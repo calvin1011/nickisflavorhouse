@@ -257,7 +257,7 @@ async function handleStripeCheckout(res, body) {
       price_data: {
         currency: 'usd',
         product_data: {
-          name: "Order — Nicki's Flavor House",
+          name: "Order, Nicki's Flavor House",
           description: `Order ${orderNumber}`,
         },
         unit_amount: Math.round(subtotalDollars * 100),

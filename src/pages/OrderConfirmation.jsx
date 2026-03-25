@@ -15,6 +15,7 @@ export function OrderConfirmation() {
   const rawSessionId = searchParams.get('session_id')
   const orderId = searchParams.get('order_id')
   const paymentMethod = searchParams.get('method')
+  const isSpecialOrder = searchParams.get('special') === 'true'
   const sessionId = typeof rawSessionId === 'string' ? rawSessionId.trim() : ''
   const validSessionId = sessionId && sessionId.startsWith('cs_') ? sessionId : null
   const clearCart = useCartStore((s) => s.clearCart)
@@ -23,6 +24,7 @@ export function OrderConfirmation() {
   const [loading, setLoading] = useState(() => {
     if (location.state?.order) return false
     if (validSessionId) return true
+    if (orderId && isSpecialOrder) return true
     if (orderId && paymentMethod && paymentMethod !== 'stripe') return true
     return false
   })
@@ -71,6 +73,37 @@ export function OrderConfirmation() {
   }, [validSessionId, location.state])
 
   useEffect(() => {
+    if (!isSpecialOrder || !orderId) return
+    if (location.state?.order) {
+      setOrder(location.state.order)
+      setItems(location.state.items || [])
+      setLoading(false)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    fetch(`${window.location.origin}/api/order?order_id=${encodeURIComponent(orderId)}&special=true`)
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
+        return r.json()
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setOrder(data.order)
+          setItems(data.items || [])
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [isSpecialOrder, orderId, location.state])
+
+  useEffect(() => {
     if (!orderId || !paymentMethod || paymentMethod === 'stripe') return
     if (location.state?.order) {
       setOrder(location.state.order)
@@ -100,6 +133,107 @@ export function OrderConfirmation() {
       })
     return () => { cancelled = true }
   }, [orderId, paymentMethod, location.state])
+
+  if (isSpecialOrder && loading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto flex-1 w-full max-w-2xl px-4 py-12 sm:px-6">
+          <p className="text-brand-foreground/80">Loading your order...</p>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (isSpecialOrder && error && !order) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto flex-1 w-full max-w-2xl px-4 py-12 sm:px-6">
+          <h1 className="font-display text-3xl font-bold text-brand-foreground">
+            Order confirmation
+          </h1>
+          <p className="mt-4 text-brand-foreground/80">{error}</p>
+          <Link to="/contact" className="mt-4 inline-block text-brand-primary hover:underline">
+            Contact me
+          </Link>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (isSpecialOrder && order) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="mx-auto flex-1 w-full max-w-2xl px-4 py-12 sm:px-6">
+          <h1 className="font-display text-3xl font-bold text-brand-foreground">
+            Thank you
+          </h1>
+          <div
+            className="mt-4 rounded-xl p-5 text-center"
+            style={{
+              backgroundColor: '#f0fdf4',
+              border: '1px solid #86efac',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              textAlign: 'center',
+              color: '#166534',
+            }}
+          >
+            Your special order request has been received!
+          </div>
+          <p className="mt-4 text-brand-foreground/80">
+            Order <strong>{order.order_number}</strong>
+          </p>
+          <p className="mt-2 text-brand-foreground/70 text-sm">
+            We&apos;ll review your request and reach out with pricing and availability.
+            You won&apos;t be charged until we confirm the details with you.
+          </p>
+          {(order.order_type === 'pickup' || order.order_type === 'delivery') && (
+            <div className="mt-6 flex items-start gap-2 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden />
+              <div>
+                <p className="font-medium text-brand-foreground">
+                  {order.order_type === 'delivery' ? 'Delivery' : 'Pickup location'}
+                </p>
+                <p className="mt-1 text-sm text-brand-foreground/90">
+                  {order.order_type === 'delivery'
+                    ? (order.delivery_address || siteConfig.pickupAddress)
+                    : siteConfig.pickupAddress}
+                </p>
+                {order.pickup_date && (
+                  <p className="mt-2 text-sm text-brand-foreground/80">
+                    {order.order_type === 'delivery' ? 'Preferred delivery' : 'Preferred pickup'}
+                    {': '}
+                    {new Date(order.pickup_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                    {order.pickup_time && ` at ${order.pickup_time}`}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          <p className="mt-6 rounded-lg border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-950">
+            If you have any questions, reach out through Contact. I&apos;m here to help.
+          </p>
+          <div className="mt-6">
+            <a
+              href={siteConfig.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-brand-primary hover:underline"
+            >
+              <Instagram size={18} aria-hidden />
+              Follow us on Instagram
+            </a>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   if (isPayAtPickup && loading) {
     return (

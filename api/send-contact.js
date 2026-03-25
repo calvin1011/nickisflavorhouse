@@ -68,7 +68,7 @@ export default async function handler(req, res) {
   const email = parsed.data.email.trim()
   const message = sanitizeString(parsed.data.message)
 
-  const subject = `Contact from ${escapeHtml(name)} — Nicki's Flavor House`
+  const subject = `Contact from ${escapeHtml(name)}, Nicki's Flavor House`
   const lines = [
     `From: ${name}`,
     `Email: ${email}`,
