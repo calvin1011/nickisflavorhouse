@@ -191,7 +191,7 @@ export function CheckoutForm() {
           payload.delivery_fee = deliveryFee
           payload.delivery_distance_miles = parseFloat(deliveryDistance)
         }
-        const res = await fetch(`${window.location.origin}/api/create-checkout`, {
+        const res = await fetch(`${window.location.origin}/api/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -239,7 +239,7 @@ export function CheckoutForm() {
         payload.delivery_fee = deliveryFee
         payload.delivery_distance_miles = parseFloat(deliveryDistance)
       }
-      const res = await fetch(`${window.location.origin}/api/create-pay-at-pickup-order`, {
+      const res = await fetch(`${window.location.origin}/api/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

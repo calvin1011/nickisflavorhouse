@@ -4,7 +4,7 @@ import { useCartStore, getCartSubtotal } from '@/store/cartStore'
 import { sanitizeOrder } from '@/lib/sanitize'
 
 /**
- * POSTs checkout payload to create-checkout API and redirects to Stripe.
+ * POSTs checkout payload to /api/checkout and redirects to Stripe.
  * Must be used inside FormProvider with checkoutSchema; validates form first.
  */
 export function PaymentButton({ children = 'Pay full amount', disabled, className }) {
@@ -60,7 +60,7 @@ export function PaymentButton({ children = 'Pay full amount', disabled, classNam
     }
 
     try {
-      const res = await fetch(`${window.location.origin}/api/create-checkout`, {
+      const res = await fetch(`${window.location.origin}/api/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

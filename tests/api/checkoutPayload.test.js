@@ -1,6 +1,6 @@
 /** @vitest-environment node */
 import { describe, it, expect } from 'vitest'
-import { payAtPickupPayloadSchema, checkoutPayloadSchema } from './lib/checkoutPayload.js'
+import { payAtPickupPayloadSchema, checkoutPayloadSchema } from '../../lib/server/checkoutPayload.js'
 
 const validUuid = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
 

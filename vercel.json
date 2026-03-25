@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    { "source": "/api/create-checkout", "destination": "/api/checkout" },
+    { "source": "/api/create-pay-at-pickup-order", "destination": "/api/checkout" },
+    { "source": "/api/order-by-session", "destination": "/api/order" },
+    { "source": "/api/order-by-id", "destination": "/api/order" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],

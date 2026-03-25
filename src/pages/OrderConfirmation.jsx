@@ -49,7 +49,7 @@ export function OrderConfirmation() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    const url = `${window.location.origin}/api/order-by-session?session_id=${encodeURIComponent(validSessionId)}`
+    const url = `${window.location.origin}/api/order?session_id=${encodeURIComponent(validSessionId)}`
     fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
@@ -81,7 +81,7 @@ export function OrderConfirmation() {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`${window.location.origin}/api/order-by-id?order_id=${encodeURIComponent(orderId)}`)
+    fetch(`${window.location.origin}/api/order?order_id=${encodeURIComponent(orderId)}`)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Order not found' : 'Could not load order')
         return r.json()
