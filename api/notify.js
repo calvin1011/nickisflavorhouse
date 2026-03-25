@@ -51,7 +51,7 @@ function buildOrderEmailHtml(order) {
   const paidInFull = order.payment_status === 'paid_in_full'
   const paymentStatusHtml = paidInFull
     ? '<span style="font-size:13px;color:#2d5016;font-weight:600;">Paid in full</span>'
-    : `<span style="font-size:13px;color:#854d0e;font-weight:600;">Payment pending — ${escapeHtml(paymentMethodLabel || 'Pay at pickup')}</span>`
+    : `<span style="font-size:13px;color:#854d0e;font-weight:600;">Payment pending, ${escapeHtml(paymentMethodLabel || 'Pay at pickup')}</span>`
   const notes = order.notes ? escapeHtml(String(order.notes)) : ''
   const cateringNotes = order.catering_notes ? escapeHtml(String(order.catering_notes)) : ''
 
@@ -62,7 +62,7 @@ function buildOrderEmailHtml(order) {
       : ''
   const eventLine =
     order.is_catering && order.event_date
-      ? `${escapeHtml(String(order.event_date))} ${escapeHtml(String(order.event_time ?? ''))} — ${escapeHtml(String(order.event_location ?? ''))}${order.guest_count ? ` (${escapeHtml(String(order.guest_count))} guests)` : ''}`
+      ? `${escapeHtml(String(order.event_date))} ${escapeHtml(String(order.event_time ?? ''))}, ${escapeHtml(String(order.event_location ?? ''))}${order.guest_count ? ` (${escapeHtml(String(order.guest_count))} guests)` : ''}`
       : ''
 
   const items = (order.items || []).map((i) => ({
@@ -182,7 +182,7 @@ function buildOrderEmailHtml(order) {
           </tr>
           <tr>
             <td style="padding:16px 28px;background-color:#f9f9f9;border-top:1px solid #eee;font-size:12px;color:#666;">
-              Nicki's Flavor House — order notification
+              Nicki's Flavor House, order notification
             </td>
           </tr>
         </table>
@@ -216,7 +216,7 @@ export async function sendEmailNotification(order) {
     }
   }
 
-  const subject = `New order ${order.order_number} — Nicki's Flavor House`
+  const subject = `New order ${order.order_number}, Nicki's Flavor House`
   const html = buildOrderEmailHtml(order)
 
   const res = await fetch(RESEND_URL, {
@@ -257,8 +257,8 @@ export async function sendPushNotification(order) {
   const title = `Order ${order.order_number}`
   const message = [
     `${order.customer_name}`,
-    `Paid in full — $${Number(order.subtotal).toFixed(2)}`,
-  ].join(' — ')
+    `Paid in full, $${Number(order.subtotal).toFixed(2)}`,
+  ].join(' | ')
 
   const headers = {
     Title: title,
@@ -303,8 +303,8 @@ export async function dispatchNotification(order) {
 }
 
 const CUSTOMER_STATUS_SUBJECTS = {
-  confirmed: "Your order is confirmed — Nicki's Flavor House",
-  ready: "Your order is ready for pickup — Nicki's Flavor House",
+  confirmed: "Your order is confirmed, Nicki's Flavor House",
+  ready: "Your order is ready for pickup, Nicki's Flavor House",
 }
 
 /**

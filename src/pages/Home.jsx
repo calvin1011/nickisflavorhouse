@@ -22,12 +22,20 @@ export function Home() {
           <p className="mt-4 max-w-lg text-lg text-brand-foreground/80">
             {siteConfig.tagline}
           </p>
-          <Link
-            to="/menu"
-            className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-primary px-6 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors"
-          >
-            Order Now
-          </Link>
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
+            <Link
+              to="/menu"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-primary px-6 py-3 font-medium text-white hover:bg-brand-primary-dark transition-colors"
+            >
+              Order Now
+            </Link>
+            <Link
+              to="/special-order"
+              className="inline-flex items-center justify-center rounded-lg border-2 border-brand-primary px-6 py-3 font-medium text-brand-primary hover:bg-brand-primary hover:text-white transition-colors"
+            >
+              Request Special Order
+            </Link>
+          </div>
         </section>
 
         {announcements.length > 0 && (

@@ -42,6 +42,25 @@ export const checkoutSchema = z.object({
   { message: 'Catering details are required for catering orders', path: ['catering'] }
 )
 
+export const specialOrderSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  email: z.string().email('Enter a valid email'),
+  phone: phoneString,
+  order_type: z.enum(['pickup', 'delivery'], { required_error: 'Select order type' }),
+  pickup_date: dateString.optional(),
+  pickup_time: timeString.optional(),
+  special_order_details: z.string().min(1, 'Please describe your special order').max(5000),
+  notes: z.string().max(2000).optional().default(''),
+}).refine(
+  (data) => {
+    if (data.order_type === 'pickup' || data.order_type === 'delivery') {
+      return !!data.pickup_date && !!data.pickup_time
+    }
+    return true
+  },
+  { message: 'Date and time are required', path: ['pickup_date'] }
+)
+
 export const contactSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   email: z.string().email('Enter a valid email'),

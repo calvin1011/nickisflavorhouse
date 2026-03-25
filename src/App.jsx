@@ -3,6 +3,7 @@ import { Home } from '@/pages/Home'
 import { Contact } from '@/pages/Contact'
 import { Menu } from '@/pages/Menu'
 import { Checkout } from '@/pages/Checkout'
+import { SpecialOrder } from '@/pages/SpecialOrder'
 import { OrderConfirmation } from '@/pages/OrderConfirmation'
 import { AdminLogin } from '@/pages/admin/AdminLogin'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
@@ -28,6 +29,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/special-order" element={<SpecialOrder />} />
         <Route path="/order-confirmation" element={<OrderConfirmation />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin/login" element={<AdminLogin />} />
