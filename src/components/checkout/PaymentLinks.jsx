@@ -25,7 +25,7 @@ export default function PaymentLinks({ paymentMethod, subtotal }) {
         Please pay <strong>${Number(subtotal).toFixed(2)}</strong> at pickup using the method you selected
       </p>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '1rem', lineHeight: 1.5 }}>
-        Questions or issues with payment? Contact Nicki (see Contact on this site) so she can help you finish paying.
+        Questions or issues with payment? Use Contact on this site—I&apos;m here to help you finish paying.
       </p>
 
       {paymentMethod === 'cashapp' && (
