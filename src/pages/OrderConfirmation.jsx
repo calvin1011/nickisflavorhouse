@@ -123,7 +123,7 @@ export function OrderConfirmation() {
           </h1>
           <p className="mt-4 text-brand-foreground/80">{error}</p>
           <Link to="/contact" className="mt-4 inline-block text-brand-primary hover:underline">
-            Contact Nicki
+            Contact me
           </Link>
         </main>
         <Footer />
@@ -146,7 +146,7 @@ export function OrderConfirmation() {
             <PaymentLinks paymentMethod={paymentMethod} subtotal={subtotalForPayAtPickup} />
           </div>
           <p className="mt-6 rounded-lg border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-950">
-            If you have any questions about payment or run into an issue, contact Nicki for payment details. She can help you complete Cash App, Zelle, or cash at pickup.
+            If you have any questions about payment or you run into an issue, reach out to me through Contact—I'm here to help you sort out Cash App, Zelle, or cash at pickup.
           </p>
           {(payAtPickupOrder.order_type === 'pickup' || payAtPickupOrder.order_type === 'delivery') && (
             <div className="mt-6 flex items-start gap-2 rounded-lg border border-brand-muted/30 bg-white/50 p-4">
@@ -200,7 +200,7 @@ export function OrderConfirmation() {
             Your order was placed. Please pay at pickup using the method you selected.
           </p>
           <p className="mt-4 rounded-lg border border-amber-200/80 bg-amber-50/90 p-4 text-sm text-amber-950">
-            If you need help with payment, contact Nicki for details.
+            If you need help with payment, get in touch through Contact—I'm happy to walk you through it.
           </p>
           <div className="mt-6">
             <a
